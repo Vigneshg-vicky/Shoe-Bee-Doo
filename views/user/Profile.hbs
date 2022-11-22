@@ -1,0 +1,330 @@
+<style>
+    #cancel:hover {
+        color: red;
+    }
+</style>
+
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">My Account</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                <li><a href="/shop">Shop</a></li>
+                                <li class="active" aria-current="page">My Account</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Account Dashboard Section:::... -->
+<div class="account-dashboard">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-3 col-lg-3">
+                <!-- Nav tabs -->
+                <div class="dashboard_tab_button" data-aos="fade-up" data-aos-delay="0">
+                    <ul role="tablist" class="nav flex-column dashboard-list">
+                        {{!-- <li><a href="#dashboard" data-bs-toggle="tab"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover ">Dashboard</a>
+                        </li> --}}
+                        <li> <a href="#orders" data-bs-toggle="tab"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover active">Orders</a></li>
+                        <li><a href="#downloads" data-bs-toggle="tab"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Downloads</a></li>
+                        <li><a href="#address" data-bs-toggle="tab"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Addresses</a></li>
+                        <li><a href="#account-details" data-bs-toggle="tab"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Account details</a>
+                        </li>
+                        <li><a href="/wallet"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Wallet</a>
+                        </li>
+                        <li><a href="/logout"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">logout</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-9 col-lg-9">
+                <!-- Tab panes -->
+                <div class="tab-content dashboard_content" data-aos="fade-up" data-aos-delay="200">
+                    <div class="tab-pane fade show " id="dashboard">
+                        <h4>Dashboard </h4>
+                        <p>From your account dashboard. you can easily check &amp; view your <a href="#">recent
+                                orders</a>, manage your <a href="#">shipping and billing addresses</a> and <a
+                                href="#">Edit your password and account details.</a></p>
+                    </div>
+                    <div class="tab-pane fade active" id="orders">
+                        <h4>Orders</h4>
+                        <div class="table_page  table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Address</th>
+                                        <th>Total</th>
+                                        <th>View</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each OrderDetails}}
+                                    <tr>
+                                        <td>{{@index}}</td>
+                                        <td>{{this.Date}}</td>
+                                        <td>
+                                            {{#if cancel}}
+                                            <span class="text-danger">{{this.OrderStatus}}</span>
+                                            {{else}}
+                                            <span class="text-success">{{this.OrderStatus}}</span>
+                                            {{/if}}
+                                        </td>
+                                        <td>{{Address.name}},{{Address.address}},{{Address.district}},{{Address.pincode}}
+                                        </td>
+                                        <td>₹{{this.TotalPrice}}</td>
+                                        <td><a href="/view-order/{{this._id}}" class="btn btn-default-hover">View
+                                                Order</a></td>
+                                        <td>
+                                            {{#if cancel}}
+                                            {{#if admin}}
+                                            <span style="color:red ;" class="badge badge-danger">{{this.OrderStatus}}</span>
+                                            {{else}}
+                                            {{#eq OrderStatus 'Payment Failed'}}
+                                            <span style="color:red ;"
+                                                class="badge badge-danger">{{this.OrderStatus}}</span>
+                                            {{else}}
+                                            <span style="color:red ;" class="badge badge-danger">{{this.OrderStatus}}</span>
+                                            {{/eq}}
+                                            {{/if}}
+                                            {{!-- {{#eq OrderStatus 'Payment Failed'}}
+                                            <span style="color:red ;" class="badge badge-danger">Cancelled</span>
+                                            {{/eq}} --}}
+                                            {{else}}
+                                            {{#if delivered}}
+                                            <a href="/return-order">Return</a>
+                                            {{!-- <span style="color:green ;" class="badge badge-success">{{this.OrderStatus}}</span> --}}
+                                            {{else}}
+                                            <span id="cancel" style="cursor:pointer;"
+                                                onclick="CancelOrder('{{this._id}}')">Cancel Order</span>
+                                            {{/if}}
+                                            {{/if}}
+
+                                        </td>
+
+                                    </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="downloads">
+                        <h4>Downloads</h4>
+                        <div class="table_page table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Downloads</th>
+                                        <th>Expires</th>
+                                        <th>Download</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Shopnovilla - Free Real Estate PSD Template</td>
+                                        <td>May 10, 2018</td>
+                                        <td><span class="danger">Expired</span></td>
+                                        <td><a href="#" class="view">Click Here To Download Your File</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Organic - ecommerce html template</td>
+                                        <td>Sep 11, 2018</td>
+                                        <td>Never</td>
+                                        <td><a href="#" class="view">Click Here To Download Your File</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {{!-- <div class="tab-pane" id="address">
+                        <h4>Addresses</h4>
+                        <p>The following addresses will be used on the checkout page by default.</p>
+                        <h5 class="billing-address">Billing address</h5>
+                        <a href="#" class="view">Edit</a>
+                        <p><strong>Bobby Jackson</strong></p>
+                        <address>
+                            Address: Your address goes here.
+                        </address>
+
+
+                    </div> --}}
+                    <!-- Tab panes -->
+                    <div class="tab-pane" id="address">
+                        <h4>Addresses</h4>
+                        {{!-- <p>The following addresses will be used on the checkout page by default.</p> --}}
+                        <h5 class="billing-address">Billing addresses of {{addressDetails.name}}</h5>
+                        <hr style="width:50%;height: 5px;border-width:0;color:gray;background-color:gray" class="h1">
+                        {{!-- <p><strong></strong></p> --}}
+                        {{#with addressDetails}}
+                        {{#each address}}
+                        <div class="row">
+                            <div class="col md-4">
+
+                            </div>
+                            <div class="col md-4">
+                            </div>
+                            <div class="col md-6">
+                                {{!-- <button class="btn btn-md btn-black-default-hover"
+                                    onclick="EditAddress('{{id}}')">Edit</button> --}}
+                                <button class="btn btn-md btn-black-default-hover "
+                                    onclick="DeleteAddress('{{id}}')">Delete</button>
+                            </div>
+                        </div>
+                        <address>
+                            <strong>Name</strong> : {{name}} <br>
+                            <strong>Address</strong> : {{address}} <br>
+                            <strong>District</strong> : {{district}} <br>
+                            <strong>Pincode</strong> : {{pincode}} <br>
+                            {{#eq landmark ''}}
+                            {{else}}
+                            <strong>Landmark</strong> : {{landmark}}
+                            {{/eq}}
+                        </address>
+                        <hr>
+                        {{/each}}
+                        {{/with}}
+                    </div>
+
+
+                    <div class="tab-pane fade" id="account-details">
+                        <h3>Account details </h3>
+                        <div class="login">
+                            <div class="login_form_container">
+                                <div class="account_login_form">
+                                    {{!-- <br> --}}
+                                    <p>You can change your Account details here.</p>
+                                    {{#with userData}}
+                                    <form action="/edit-user/{{this._id}}" method="post">
+                                        {{!-- <p>Already have an account? <a href="#">Log in instead!</a></p> --}}
+                                        {{!-- <div class="input-radio">
+                                            <span class="custom-radio"><input type="radio" value="1" name="id_gender">
+                                                Mr.</span>
+                                            <span class="custom-radio"><input type="radio" value="1" name="id_gender">
+                                                Mrs.</span>
+                                        </div> --}}
+                                        <div class="default-form-box mb-20">
+                                            <label>Full Name</label>
+                                            <input type="text" name="name" value="{{this.name}}">
+                                        </div>
+                                        {{!-- <div class="default-form-box mb-20">
+                                            <label>Last Name</label>
+                                            <input type="text" name="last-name">
+                                        </div> --}}
+                                        <div class="default-form-box mb-20">
+                                            <label>Email</label>
+                                            <input type="text" name="email" value="{{this.email}}">
+                                        </div>
+                                        <div class="default-form-box mb-20">
+                                            <label>Mobile No.</label>
+                                            <input type="number" name="number" value="{{this.number}}">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="save_button mt-3">
+                                                    <button class="btn btn-md btn-black-default-hover"
+                                                        type="submit">Save</button>
+                                                </div>
+                                            </div>
+                                            <div class="col xl-3">
+                                                <div class="save_button mt-3">
+                                                    <a href="/password"
+                                                        class="btn btn-md btn-black-default-hover active">Change
+                                                        Password<button></button></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {{/with}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br> <br><br><br><!-- ...:::: End Account Dashboard Section:::... -->
+
+<script>
+    async function CancelOrder(OrderId) {
+        try {
+            console.log('Cancel ORder reached')
+            const response = await axios({
+                method: 'post',
+                url: '/cancel-order',
+                data: {
+                    OrderId
+                }
+            });
+            if (response.data.status == 'success') {
+                console.log(response.data);
+                window.reload(true);
+
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function ChangePassword(userId) {
+
+        const response = await axios({
+            method: 'get',
+            url: '/password',
+            data: {
+                userId
+            }
+        })
+    }
+
+    async function EditAddress(addressId) {
+
+        const response = await axios({
+            method: 'post',
+            url: '/edit-address',
+            data: {
+                addressId
+            }
+        })
+    }
+
+    async function DeleteAddress(addressId) {
+        console.log(addressId)
+        const response = await axios({
+            method: 'post',
+            url: '/delete-address',
+            data: {
+                addressId
+            }
+        })
+        if (response.data.status == 'success') {
+            location.reload();
+        }
+    }
+
+</script>

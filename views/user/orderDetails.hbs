@@ -1,0 +1,136 @@
+<div class="account-dashboard m-5 ">
+    <div>
+        <div class="row mb-2">
+
+            <div class="col-8">
+                <h4><strong>Orders</strong></h4>
+            </div>
+            {{!-- <div class="col-4">
+                {{#if order.delivery}}
+                {{#if order.return}}
+                <h6><strong class="text-danger">Return Order</strong></h6>
+                {{else}}
+                <a href="/order/return/{{order._id}}" class="view"><button
+                        class="bg-dark text-white btn mt-2">return</button></a>
+                {{/if}}
+                {{/if}}
+
+
+            </div> --}}
+
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <h6>Payment Method</h6>
+                <p>{{OrderDetails.Payment}}</p>
+            </div>
+            <div class="col-6">
+                <h6>Address</h6>
+                <p>{{OrderDetails.Address.address}},{{OrderDetails.Address.district}}, <br>
+                    {{OrderDetails.Address.state}},{{OrderDetails.Address.pincode}}</p>
+            </div>
+        </div>
+        <div class="table_page table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        {{!-- {{#if order.delivery}}
+                        {{else}} --}}
+                        <th>Option</th>
+
+                        {{!-- {{/if}} --}}
+
+
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{#with OrderDetails}}
+                    {{#each Products}}
+
+
+                    <tr>
+                        {{!-- <td>{{product_details.urls.[0]}}</td> --}}
+                        <td><a href="/product"><img src="{{product_details.urls.[0]}}" class="img-thumbnail"
+                                    {{!{{product_details.urls[0]}} width="80rem" alt="">
+                            </a></td>
+                        <td>{{product_details.product}}</td>
+                        <td>{{quantity}}</td>
+                        <td>{{subTotal}}</td>
+                        <td>
+                            {{#if ../cancel}}
+                            <span style="color:red ;" class="badge-danger">Cancelled</span>
+                            {{else }}
+                            <span style="color:rgb(15, 209, 70) ;" class="badge-success">Delivered</span>
+                            {{!-- <a style="cursor:pointer ;" class="view" onclick="cancelProduct('{{../../orderId}}','{{product_details._id}}')">cancel</a> --}}
+                            {{/if}}
+                        </td>
+                        {{!-- {{#if ../delivery}}
+
+                        {{else}}
+
+                        {{#if cancel}}
+                        {{#if ../return}}
+                        <td>Order return completed</td>
+                        {{else}}
+                        <td><strong class="text-danger">Cancelled</strong></td>
+                        {{/if}}
+                        {{else}}
+                        {{#if ../return}}
+                        <td>Order return completed</td>
+                        {{else}}
+                        <td><a href="/order/cancel" class="view">cancel</a></td>
+
+                        {{/if}}
+
+
+                        {{/if}}
+                        {{/if}} --}}
+
+                    </tr>
+
+                    {{/each}}
+                    {{/with}}
+                </tbody>
+            </table>
+
+        </div>
+        <div class="row mt-4">
+            <div class="col-8">
+
+            </div>
+            <div class="col-4">
+                <table>
+
+                    <tbody>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td>{{OrderDetails.TotalPrice}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function cancelProduct (orderId,ProId){
+        console.log("Reached function")
+        console.log(orderId,ProId)
+
+        const response = await axios({
+            method:'post',
+            url:'/cancel-product',
+            data:{
+                orderId,
+                ProId
+            }
+        });
+    }
+
+</script>

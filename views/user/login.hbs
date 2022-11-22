@@ -1,0 +1,128 @@
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">Login</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                {{!-- <li><a href="shop-grid-sidebar-left.html">Shop</a></li> --}}
+                                <li class="active" aria-current="page">Login</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Customer Login Section :::... -->
+<div class="customer-login">
+    <div class="container">
+        <div class="row">
+            <!--login area start-->
+            <div class="col-lg-6 col-md-6">
+                <div class="account_form" data-aos="fade-up" data-aos-delay="0">
+                    <h3>Login</h3>
+					<span id="loginerror" class="h5">{{this.error}}</span>
+                    <form id="submit-form">
+                         <span id="error" style="color:red ;" class="h4 text-danger"></span>
+                        <div class="default-form-box">
+                            <label>Email <span>*</span></label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="default-form-box">
+                            <label>Passwords <span>*</span></label>
+                            <input type="password" id="password" name="password">
+                        </div>
+                        <div class="login_submit">
+                            <button class="btn btn-md btn-black-default-hover mb-4">login</button>
+                        </div>
+                        {{!-- <br> --}}
+                        <a href="/otp" class="btn btn-md btn-black-default-hover">Log In with OTP</a>
+						<br><br>
+						<a class="mt-3" href="/forgot-password">Forgot Password? Click here</a>
+                        <br><br>
+                        <p>Don't have an Account?</p>
+                        <a href="/" class="btn btn-md btn-black-default-hover" type="button">Sign Up</a>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<br><br> <!-- ...:::: End Customer Login Section :::... -->
+
+
+{{!-- <script src="/js/loginvalidation.js"></script> --}}
+
+
+<!-- Validation -->
+
+<script>
+	$(document).ready(function () {
+		$("#submit-form").validate({
+			rules: {
+				email: {
+					required: true,
+				},
+				password: {
+					required: true,
+				},
+			},
+			messages: {
+
+				email: {
+					required: "Enter a valid email address",
+				},
+				password: {
+					required: "Enter your password",
+				},
+			},
+			submitHandler: function (form, e) {
+				login();
+			},
+		});
+	});
+
+	// -----------------AXIOS-------------------//
+
+	async function login() {
+		try {
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+			const response = await axios({
+				method: 'post',
+				url: '/login',
+				data: {
+					email,
+					password,
+				}
+			})
+			//console.log(response.data)
+			if (response.data.status == 'success') {
+				location.assign('/home')
+			}
+		}
+		catch (error) {
+			console.log({error});
+			 document.getElementById('error').innerHTML = error.response.data.message;
+			window.addEventListener('click', () => {
+				document.getElementById('error').innerHTML = "";
+			})
+		}
+	}
+	document.getElementById('loginerror').
+	addEventListener('click',()=>{
+
+	})
+
+</script>

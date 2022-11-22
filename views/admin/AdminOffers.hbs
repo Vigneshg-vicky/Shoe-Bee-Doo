@@ -1,0 +1,421 @@
+<div id="content-wrapper" class="d-flex flex-column">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-center align-item-center">
+            <h5 class="m-0 font-weight-bold text-primary">Offers Management</h5>
+        </div>
+        <div class="row">
+            <div class="col-xl-6 col-lg-6 col-md-6">
+
+                <a class="ms-5 mt-3 btn btn-primary" data-bs-toggle="collapse" href="#collapsebrand" role="button" aria-expanded="false"
+                    aria-controls="collapseExample" style="width:150px ; height:50px ; color:white">
+                    Create Category offer
+                </a>
+
+                <div class="collapse" id="collapsebrand">
+                    <div class="card card-body">
+
+                        <form id="addCatoffer" action="/admin/add-offer" method="post" class="tm-edit-product-form">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="col-xl-12 col-lg-12 col-md-12 mb-3">
+                                        <label for="name">Category Offer</label>
+                                        <select class="form-select" aria-label="Default select example" name="category">
+
+                                            <option selected>Select Category</option>
+                                            {{#each Category}}
+                                            {{!-- <p>{{this._id}}</p> --}}
+                                            <option value="{{this._id}}">{{this.categoryName}}</option>
+                                            {{/each}}
+
+                                        </select>
+
+                                    </div>
+
+                                    <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                        <label for="name">Discount</label>
+                                        <input id="name" name="categoryDiscount" type="text" class="form-control validate"
+                                            required />
+                                    </div>
+                                </div>
+
+                                <div class="for col-xl-4 col-lg-4 col-md-4 mb-3"></div>
+
+
+                                <div class="forcol-6 col-md-12 col-lg-12 mb-3">
+                                    <button type="submit"
+                                        class="btn btn-primary btn-block text-uppercase">Create</button>
+                                </div>
+                                <div class="for col-xl-4 col-lg-4 col-md-4 mb-3"></div>
+
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-6 col-md-6">
+
+                <a class="ms-5 mt-3 btn btn-primary" data-bs-toggle="collapse" href="#collapseproduct" role="button"
+                    aria-expanded="false" aria-controls="collapseExample"
+                    style=" width:150px ; height:50px ; color:white">
+                    Create Product offer
+                </a>
+                <div class="collapse" id="collapseproduct">
+                    <div class="card card-body">
+
+                        <form id="addProOffer" action="/admin/add-productOffer" method="post" class="tm-edit-product-form">
+                            <div class="row">
+
+                                <div class="col-6">
+                                    <div class="col-6 col-md-12 col-lg-12 mb-3">
+                                        <label for="name">Product Offer</label>
+                                        <select class="form-select" aria-label="Default select example" name="product">
+                                            <option selected>Select Product</option>
+                                            {{#each Products}}
+                                            <option value="{{this._id}}" >{{product}}</option>
+                                            {{/each}}
+
+                                        </select>
+
+                                    </div>
+                                    <div class="for col-6 col-md-12 col-lg-12 mb-3">
+                                        <label for="name">Discount</label>
+                                        <input id="name" name="productDiscount" type="text" class="form-control validate"
+                                            required />
+                                    </div>
+                                </div>
+                                <div class="for col-xl-4 col-lg-4 col-md-4 mb-3"></div>
+
+
+                                <div class="for col-6 col-md-12 col-lg-12 mb-3">
+                                    <button type="submit"
+                                        class="btn btn-primary btn-block text-uppercase">Create</button>
+                                </div>
+                                <div class="for col-xl-4 col-lg-4 col-md-4 mb-3"></div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="card-body">
+                    <div class="table-responsive ">
+                        <table class="table table-bordered" id="couponTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+
+                                    <th scope="col">Category Name </th>
+                                    <th scope="col">Discount</th>
+                                    <th scope="col">Settings</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#each disCategory}}
+                                <tr>
+
+                                    <td>{{categoryName}}</td>
+                                    <td>{{categoryDiscount}}%</td>
+                                    
+                                    <td>
+                                        <a data-bs-toggle="modal" data-bs-target="#editcatModal{{@index}}" href="" <i
+                                            class="fa-solid fa-pen-to-square "></i></a>
+                                        <a href="" data-bs-toggle="modal" data-bs-target="#deleteCatOffer{{@index}}" <i
+                                            class="fa-solid fa-trash-can"></i></a>
+                                    </td>
+
+                                </tr>
+
+
+                                <!-- Modal for edit category -->
+                                <div class="modal fade" id="editcatModal{{@index}}" tabindex="-1"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel" style="color:green ;">
+                                                    Edit Category Offer
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="editCatOffer" action="/admin/edit-category-offer/{{this._id}}" method="post"
+                                                    class="tm-edit-product-form">
+                                                    <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                        <label for="name">Category Name</label>
+                                                        <input id="name" name="category" type="text"
+                                                            class="form-control validate" required
+                                                            value="{{categoryName}}" disabled/>
+                                                    </div>
+                                                    <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                        <label for="name">Discount</label>
+                                                        <input id="discount" name="discount" type="text"
+                                                            class="form-control validate" required
+                                                            value="{{categoryDiscount}}" />
+                                                    </div>
+
+                                                    <div class="modal-footer">
+
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">
+                                                            Close</button>
+                                                        <button type="submit" class="btn btn-primary">Save
+                                                            Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!---Modal End- --->
+
+
+                                <!-- Modal for delete category-->
+                                <div class="modal fade" id="deleteCatOffer{{@index}}" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="staticBackdropLabel" style="color:green;">
+                                                    Delete
+                                                    Category Offer</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Do you want to delete this offer?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-primary"><a style="color: white;"
+                                                        href="/admin/delete-category-offer/{{this._id}}">Confirm</a> </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 col-md-6">
+                <div class="card-body">
+                    <div class="table-responsive ">
+                        <table class="table table-bordered" id="productdTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+
+                                    <th scope="col">Product Name </th>
+                                    <th scope="col">Discount</th>
+                                    
+                                    <th scope="col">Settings</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {{#each disProduct}}
+                                <tr>
+
+                                    <td>{{product}}</td>
+                                    <td>{{productDiscount}}%</td>
+                                    
+                                    <td>
+                                        <a data-bs-toggle="modal" data-bs-target="#editofferModal{{@index}}" href="" <i
+                                            class="fa-solid fa-pen-to-square "></i></a>
+                                        <a href="" data-bs-toggle="modal" data-bs-target="#productmodal{{@index}}" <i
+                                            class="fa-solid fa-trash-can"></i></a>
+                                    </td>
+
+                                </tr>
+
+
+                                <!-- Modal for product offer edit -->
+                                <div class="modal fade" id="editofferModal{{@index}}" tabindex="-1"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel" style="color:green ;">
+                                                    Edit Product offer
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form id="editProOffer" action="/admin/edit-product-offer/{{this._id}}" method="post"
+                                                    class="tm-edit-product-form">
+                                                    <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                        <label for="name">Product Name fdg</label>
+                                                        <input id="name" name="" type="text"
+                                                            class="form-control validate" required
+                                                            value="{{this.product}}" disabled/>
+                                                    </div>
+                                                    <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                        <label for="name">Discount</label>
+                                                        <input id="name" name="discount" type="text"
+                                                            class="form-control validate" required
+                                                            value="{{this.productDiscount}}" />
+                                                    </div>
+
+
+                                                   
+                                                    <div class="modal-footer">
+
+                                                        <button type="button" class="btn btn-secondary"
+                                                            data-bs-dismiss="modal">
+                                                            Close</button>
+                                                        <button type="submit" class="btn btn-primary">Save
+                                                            Changes</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!---Modal End- --->
+
+
+                                <!-- Modal for delete product offer -->
+                                <div class="modal fade" id="productmodal{{@index}}" data-bs-backdrop="static"
+                                    data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="staticBackdropLabel" style="color:green;">
+                                                    Delete
+                                                    product offer</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Do you want to delete this offer?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-primary"><a style="color: white;"
+                                                        href="/admin/delete-product-offer/{{this._id}}">Confirm</a> </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {{!-- <div class="card-body">
+            <div class="table-responsive ">
+                <table class="table table-bordered" id="couponTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Coupon Code </th>
+                            <th scope="col">Discount</th>
+                            <th scope="col">Expires On</th>
+                            <th scope="col">Settings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each coupons}}
+                        <tr>
+                            <td>{{this.coupon}}</td>
+                            <td>{{this.discount}}%</td>
+                            <td>{{this.expires_on}}</td>
+                            <td>
+                                <a data-bs-toggle="modal" data-bs-target="#editModal{{@index}}" href="" <i
+                                    class="fa-solid fa-pen-to-square "></i></a>
+                                <a href="" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{@index}}" <i
+                                    class="fa-solid fa-trash-can"></i></a>
+                            </td>
+                        </tr>
+                        <!-- Modal -->
+                        <div class="modal fade" id="editModal{{@index}}" tabindex="-1"
+                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel" style="color:green ;">Edit Coupon
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/admin/edit-coupon/{{this._id}}" method="post"
+                                            class="tm-edit-product-form">
+                                            <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                <label for="name">Coupon Code</label>
+                                                <input id="name" name="couponName" type="text"
+                                                    class="form-control validate" required value="{{this.coupon}}" />
+                                            </div>
+                                            <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                <label for="name">Discount</label>
+                                                <input id="name" name="discount" type="text"
+                                                    class="form-control validate" required value="{{this.discount}}" />
+                                            </div>
+                                            <div class="for col-xl-12 col-lg-12 col-md-12 mb-3">
+                                                <label for="stock"> Expiry Date</label>
+                                                <input id="stock" name="date" type="date" class="form-control validate"
+                                                    required value="{{this.expires_on}}" />
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    Close</button>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!---Modal End- --->
+                        <!-- Modal -->
+                        <div class="modal fade" id="staticBackdrop{{@index}}" data-bs-backdrop="static"
+                            data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="staticBackdropLabel" style="color:green;">Delete
+                                            Coupon</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Do you want to delete this coupon?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary"><a style="color: white;"
+                                                href="/admin/delete-coupon/{{this._id}}">Confirm</a> </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div> --}}
+    </div>
+</div>

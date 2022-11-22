@@ -1,0 +1,175 @@
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">Sign Up</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                {{!-- <li><a href="shop-grid-sidebar-left.html">Shop</a></li> --}}
+                                <li class="active" aria-current="page">SignUp</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Customer Login Section :::... -->
+<div class="customer-login">
+    <div class="container">
+        <div class="row">
+            
+            <!--register area start-->
+            <div class="col-lg-6 col-md-6">
+                <div class="account_form register" data-aos="fade-up" data-aos-delay="200">
+                    <h3>Register</h3>
+                    <form id="submit-form" action="#">
+                        <div class="default-form-box">
+                            {{!-- Error --}}
+                            <span id="error" class="text-dark h2 text-danger"></span>
+                            <!--Error message shows here-->
+                            <label>Name <span>*</span></label>
+                            <input type="text"  id="name" name="name">
+                        </div>
+                        <div class="default-form-box">
+                            <label>Email <span>*</span></label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="default-form-box">
+                            <label>Phone Number <span>*</span></label>
+                            <input type="number" id="number" name="number">
+                        </div>
+                        <div class="default-form-box">
+                            <label>Password <span>*</span></label>
+                            <input type="password" id="password" name="password">
+                        </div>
+                        <div class="default-form-box">
+                            <label>Confirm Password <span>*</span></label>
+                            <input type="password" id="confirm_password"
+                                name="confirm_password">
+                        </div>
+                        <div class="login_submit">
+                            <button class="btn btn-md btn-black-default-hover" type="submit">Register</button>
+                        </div>
+                        <br>
+                        <p>Already have an Account?</p>
+                        <a href="/login" class="btn btn-md btn-black-default-hover" type="button">Log
+                                In </a>
+                    </form>
+                </div>
+            </div>
+            <!--register area end-->
+        </div>
+    </div>
+</div>
+<br><br> <!-- ...:::: End Customer Login Section :::... -->
+
+
+{{!--
+<script src="/js/signupvalidation.js"></script> --}}
+
+<!-- Validation -->
+
+<script>
+    $(document).ready(function () {
+        $("#submit-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                    minlength: 6,
+                },
+                email: {
+                    required: true,
+
+                },
+                number: {
+                    required: true,
+                    digits: true,
+                    minlength: 10,
+                    maxlength: 10,
+                },
+                password: {
+                    required: true,
+                    minlength: 2,
+                    maxlength: 12,
+
+                },
+            },
+            messages: {
+                name: {
+                    required: "Please enter your Username",
+                    minlength: 'Minimum of 6 letters!',
+                },
+                email: {
+                    required: "Enter a valid email address",
+                },
+                password: {
+                    required: "Enter your password",
+                    minlength: 'Minimum length is 7 characters!',
+                    maxlength: 'Maximum length is 12 characters!',
+
+                },
+                number: {
+                    required: "Enter your Mobile Number",
+                    minlength: "Enter 10 digits",
+                    maxlength: "Enter 10 digits",
+                },
+                confirm_password: {
+                    required: "Re-enter the password",
+
+                },
+
+            },
+            submitHandler: function (form, e) {
+
+                signup();
+            },
+        });
+    });
+
+    // -----------------AXIOS-------------------//
+
+
+    async function signup() {
+        try {
+
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const number = document.getElementById('number').value;
+            const password = document.getElementById('password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
+            const response = await axios({
+                method: 'post',
+                url: '/signup',
+                data: {
+                    name,
+                    email,
+                    number,
+                    password,
+                    confirm_password,
+                }
+            })
+            console.log(response);
+            if (response.data.status == 'success') {
+                location.assign('/home');
+            }
+        }
+        catch (error) {
+            document.getElementById('error').innerHTML = error.response.data.message;
+            window.addEventListener('click', () => {
+                document.getElementById('error').innerHTML = "";
+            })
+        }
+    }
+
+</script>

@@ -1,0 +1,506 @@
+{{!--
+<!-- ::::::::::::::Favicon icon::::::::::::::-->
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/png">
+
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div> --}}
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">Checkout</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/shop">Shop</a></li>
+                                <li><a href="/cart">Cart</a></li>
+                                <li class="active" aria-current="page">Checkout</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Checkout Section:::... -->
+<div class="checkout-section">
+    <div class="container">
+
+        <!-- Start User Details Checkout Form -->
+        <div class="checkout_form" data-aos="fade-up" data-aos-delay="400">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <form id="submit-form">
+                        <h3>Billing Details</h3>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="default-form-box">
+                                    <label for="country">Addresses <span>*</span></label>
+                                    <select class="country_option nice-select wide" name="country" id="addresses">
+                                        {{#with useraddress}}
+                                        <option value="" selected>Select an Address</option>
+                                        {{#each address}}
+                                        <option value="{{id}}">{{name}}, {{number}}, {{address}}, {{district}},
+                                            {{state}}, {{pincode}}</option>
+                                        {{/each}}
+                                        {{/with}}
+                                    </select>
+                                </div>
+                            </div>
+                            <br>
+                            <p><strong id="AddressMissing" class="text-danger"></strong></p>
+
+                            <div class="col-12">
+                                <label class="checkbox-default" for="newShipping" data-bs-toggle="collapse"
+                                    data-bs-target="#anotherShipping">
+                                    <br><br>
+                                    <input type="checkbox" id="newShipping">
+                                    <span class="font-weight-bold font-italic">Ship to a different address?</span>
+                                </label>
+
+                                <div id="anotherShipping" class="collapse mt-3" data-parent="#anotherShipping">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-6">
+                                            <div class="default-form-box">
+                                                <label>Name <span>*</span></label>
+                                                <input type="text" id="name" name="name">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="default-form-box">
+                                                <label>Mobile Number <span>*</span></label>
+                                                <input type="number" id="number" name="number">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="default-form-box">
+                                                <label>Pincode <span>*</span></label>
+                                                <input type="number" id="pincode" name="pincode">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="default-form-box">
+                                                <label>District <span>*</span></label>
+                                                <input type="text" id="district" name="district">
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-3">
+                                            <div class="order-notes">
+                                                <label for="order_note">Address</label>
+                                                <textarea id="address" name="address"
+                                                    placeholder="Address(Area & Street)"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="default-form-box">
+                                                <label>State <span>*</span></label>
+                                                <input type="text" id="state" name="state">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <div class="default-form-box">
+                                                <label>Landmark <span>(optional)</span></label>
+                                                <input type="text" id="landmark">
+                                            </div>
+                                        </div>
+                                        <div class="order_button pt-3">
+                                            <button class="btn btn-md btn-black-default-hover">Save Address</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{!-- <div class="col-12 mt-3">
+                                <div class="order-notes">
+                                    <label for="order_note">Order Notes</label>
+                                    <textarea id="order_note"
+                                        placeholder="Notes about your order, e.g. special notes for delivery."></textarea>
+                                </div>
+                            </div> --}}
+                        </div>
+                    </form>
+                    <br>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="coupon_code left" data-aos="fade-up" data-aos-delay="200">
+                            <h3>Coupon</h3>
+                            <div class="coupon_inner">
+                                <p>Enter your coupon code if you have one.</p>
+                                <input id="coupon" class="mb-2" placeholder="Coupon code" type="text">
+                                <button id="coupon-btn" class="btn btn-md btn-golden"
+                                    onclick="ApplyCoupon('{{id}}','{{CheckOutProducts.total}}')">Apply
+                                    coupon</button>
+                            </div>
+                            <span id="message" class="mb-3 pb-3 text-success"></span>
+                            <span id="errormessage" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+
+                {{#with CheckOutProducts}}
+                <div class="col-lg-6 col-md-6">
+                    {{!-- <form> --}}
+                        <h3>Your order</h3>
+                        <div class="order_table table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                {{#each products}}
+                                <tbody>
+                                    <tr>
+                                        <td> {{product_details.product}} <strong> × {{quantity}}</strong></td>
+                                        <td> ₹{{subTotal}}</td>
+                                    </tr>
+                                </tbody>
+                                {{/each}}
+                                <tfoot>
+                                    <tr>
+                                        <th>Cart Subtotal</th>
+                                        <td>₹{{this.total}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Coupon Discount</th>
+                                        <td><strong id="discountprice">00</strong></td>
+                                    </tr>
+                                    <tr class="order_total">
+                                        <th>Order Total</th>
+                                        <td><strong id="alltotal">₹{{this.total}}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="payment_method">
+                            <div class="col-12 ">
+                                <div class="default-form-box">
+                                    <label for="address">Payment Method </label>
+                                    <select class="country_option nice-select wide" name="paymentMethod"
+                                        id="paymentMethod">
+                                        <option value="" selected>Choose Payment Method</option>
+                                        <option value="COD">Cash On Delivery</option>
+                                        <option value="RAZORPAY">Razorpay</option>
+                                        <option value="PAYPAL">PayPal</option>
+                                        {{!-- <option value="WALLET">Wallet</option> --}}
+                                    </select>
+                                </div>
+                                <p><strong class="text-danger" id="walletMessage"></strong></p>
+                            </div>
+                            <br><br>
+                            <div class="order_button pt-3">
+                                <button class="btn btn-md btn-black-default-hover" onclick="PlaceOrder('{{_id}}')">Place
+                                    Order</button>
+                            </div>
+                            {{!--
+                    </form> --}}
+                </div>
+                {{/with}}
+            </div>
+        </div> <!-- Start User Details Checkout Form -->
+    </div>
+</div><!-- ...:::: End Checkout Section:::... -->
+<br><br>
+
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
+{{!------------------------ Sweet Alert CDN --------------------------}}
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#submit-form").validate({
+            rules: {
+                name: {
+                    required: true,
+                },
+                number: {
+                    required: true,
+                },
+                district: {
+                    required: true,
+                },
+                pincode: {
+                    required: true,
+                },
+                address: {
+                    required: true,
+                },
+                state: {
+                    required: true,
+                },
+            },
+            messages: {
+
+                name: {
+                    required: "Enter your Name",
+                },
+                number: {
+                    required: "Enter your number",
+                },
+                district: {
+                    required: "Enter your district",
+                },
+                pincode: {
+                    required: "Enter your pincode",
+                },
+                address: {
+                    required: "Enter your address",
+                },
+                state: {
+                    required: "Enter your state",
+                },
+            },
+            submitHandler: function (form, e) {
+                addAddress();
+            },
+        });
+    });
+
+    const addAddress = async () => {
+        try {
+            const name = document.getElementById('name').value;
+            const number = document.getElementById('number').value;
+            const district = document.getElementById('district').value;
+            const pincode = document.getElementById('pincode').value;
+            const address = document.getElementById('address').value;
+            const state = document.getElementById('state').value;
+            const landmark = document.getElementById('landmark').value;
+
+            const response = await axios({
+                method: 'post',
+                url: '/add-address',
+                data: {
+                    name,
+                    number,
+                    district,
+                    pincode,
+                    address,
+                    state,
+                    landmark,
+                }
+            })
+            if (response.data.status == 'success') {
+                location.reload(true);
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    //--------------APPLY COUPON---------------//
+
+    async function ApplyCoupon(userId,total) {
+        try {
+            console.log(userId,total)
+            const coupon = document.getElementById('coupon').value;
+            const response = await axios({
+                method:'post',
+                url:'/apply-coupon',
+                data:{
+                    userId,
+                    coupon,
+                    total,
+                }
+            })
+            if(response.data.status == 'success'){
+                document.getElementById('errormessage').innerHTML = "";
+                const discount = response.data.discounted;
+                document.getElementById('coupon-btn').disabled = true;
+                document.getElementById('coupon').disabled = true;
+                document.getElementById('discountprice').innerHTML = '₹'+discount;
+                document.getElementById('alltotal').innerHTML = '₹'+(total-discount);
+                document.getElementById('message').innerHTML = response.data.message;
+
+            }
+
+        } catch (err) {
+            console.log(err)
+            document.getElementById('errormessage').innerHTML = err.response.data.message;
+        }
+    }
+
+    //---------------------Place Order-------------------//
+
+    async function PlaceOrder(userId) {
+        try {
+            const addressId = document.getElementById('addresses').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const coupon = document.getElementById('coupon').value;
+            //const totalAmount = document.getElementById('alltotal').innerHTML;
+            if (addressId != '' && paymentMethod != '') {
+
+                const response = await axios({
+                    method: 'post',
+                    url: '/place-order',
+                    data: {
+                        userId,
+                        addressId,
+                        paymentMethod,
+                        coupon,
+                    }
+                })
+
+                console.log(response);
+                if (response.data.status == 'Razorpay') {
+                    console.log('REached Razor Pay');
+                    RazorpayOrder(response.data.Order);
+                } else if (response.data.status == 'paypal') {
+                    console.log(response)
+                    location.assign(response.data.RedirectLink)
+                }
+
+                else if (response.data.status = 'success') {
+
+                    console.log(response.data)
+                    swal("Order Placed", {
+                        icon: 'success',
+                        buttons: {
+                            View_Orders: "View Orders",
+                            Continue_Shopping: 'Continue Shopping',
+                        },
+                    })
+                        .then((value) => {
+                            switch (value) {
+                                case "Continue_Shopping":
+                                    location.assign('/home');
+                                    break;
+                                case "View_Orders":
+                                    location.assign('/profile');
+                                    break;
+                                default:
+                                    location.assign('/home');
+                            }
+                        });
+                }
+            } else {
+                if (addressId == '') {
+                    document.getElementById('AddressMissing').innerHTML = "Please Add your Shipping Address"
+                }
+                if (paymentMethod == '') {
+                    document.getElementById('walletMessage').innerHTML = "Please choose your Payment Option"
+                }
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    function RazorpayOrder(order) {
+        console.log(order)
+        var options = {
+            "key": 'rzp_test_l36Oe5XybHwOrm', // Enter the Key ID generated from the Dashboard
+            "amount": order.amount.toString(), // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "Shoe Bee Doo",
+            "description": "Test Transaction",
+            "image": "https://example.com/your_logo",
+            "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+            "handler": function (response) {
+                VerifyPayment(response, order);
+                //alert(response.razorpay_payment_id);
+                //alert(response.razorpay_order_id);
+                //alert(response.razorpay_signature)
+            },
+            "prefill": {
+                "name": "Gaurav Kumar",
+                "email": "gaurav.kumar@example.com",
+                "contact": "9999999999"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+        rzp1.on('payment.failed', function (response) {
+            // alert(response.error.code);
+            alert(response.error.description);
+
+            alert('Payment Failed')
+            alert(response.error.description)
+            /*   swal(response.error.description, {
+                   icon: 'success',
+                   buttons: {
+                       View_Orders: "View Orders",
+                       Continue_Shopping: 'Continue Shopping',
+                   },
+               })
+                   .then((value) => {
+                       switch (value) {
+                           case "Continue_Shopping":
+                               location.assign('/home');
+                               break;
+                           case "View_Orders":
+                               location.assign('/profile');
+                               break;
+                           default:
+                               location.assign('/home');
+                       }
+                   }); */
+            // alert(response.error.source);
+            // alert(response.error.step);
+            // alert(response.error.reason);
+            // alert(response.error.metadata.order_id);
+            // alert(response.error.metadata.payment_id);
+        });
+    }
+
+    async function VerifyPayment(payment, order) {
+        try {
+            const response = await axios({
+                method: 'post',
+                url: 'verify-payment',
+                data: {
+                    payment,
+                    order
+                }
+            })
+            if (response.data.status == 'success') {
+                alert('Payment Success')
+                swal("Order Placed", {
+                    icon: 'success',
+                    buttons: {
+                        View_Orders: "View Orders",
+                        Continue_Shopping: 'Continue Shopping',
+                    },
+                })
+                    .then((value) => {
+                        switch (value) {
+                            case "Continue_Shopping":
+                                location.assign('/home');
+                                break;
+                            case "View_Orders":
+                                location.assign('/profile');
+                                break;
+                            default:
+                                location.assign('/home');
+                        }
+                    });
+            }
+        } catch (error) {
+
+            console.log('Payment failed')
+            console.log(error)
+
+        }
+    }
+
+</script>
+
+
+
+{{!--
+<script src="/js/AddToCart.js"></script> --}}

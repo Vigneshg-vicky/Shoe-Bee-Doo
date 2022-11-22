@@ -1,0 +1,204 @@
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">Cart</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                <li><a href="/shop">Shop</a></li>
+                                <li class="active" aria-current="page">Cart</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Cart Section:::... -->
+<div class="cart-section">
+    <!-- Start Cart Table -->
+    <div class="cart-table-wrapper" data-aos="fade-up" data-aos-delay="0">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table_desc">
+                        <div class="table_page table-responsive">
+                            <table>
+                                <!-- Start Cart Table Head -->
+                                <thead>
+                                    <tr>
+                                        <th class="product_remove">Delete</th>
+                                        <th class="product_thumb">Image</th>
+                                        <th class="product_name">Product</th>
+                                        <th class="product-price">Price</th>
+                                        <th class="product_quantity">Quantity</th>
+                                        <th class="product_total">Total</th>
+                                    </tr>
+                                </thead> <!-- End Cart Table Head -->
+                                {{#with cartdetails}}
+                                {{!-- {{cartdetails}} --}}
+                                <tbody>
+
+                                    <!-- Start Cart Single Item-->
+                                    {{#each products}}
+                                    <tr>
+                                        <td class="product_remove"><a href=""
+                                                onclick="deleteCartProduct('{{product_details._id}}')"><i
+                                                    class="fa fa-trash-o"></i></a>
+                                        </td>
+                                        <td class="product_thumb"><a href="/product/{{product_details._id}}"><img
+                                                    src="{{product_details.urls.[0]}}" alt=""></a></td>
+                                        <td class="product_name"><a
+                                                href="/product/{{product_details._id}}">{{product_details.product}}</a>
+                                        </td>
+                                        <td id="{{product_details._id}}product_price">{{product_details.discountprice}}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-around mt-2"> <button
+                                                    class="btn btn-md btn-black-default-hover"
+                                                    onclick="quantityUpdate('{{product_details._id}}',1)">+</button>
+                                                <input style="text-align:center;" type="text" readonly
+                                                    value="{{quantity}}" id="{{product_details._id}}quantity">
+
+                                                <button id="{{product_details._id}}decrement"
+                                                    class="btn btn-md btn-black-default-hover"
+                                                    onclick="quantityUpdate('{{product_details._id}}',-1)">-</button>
+                                            </div>
+                                        </td>
+                                        <td id="{{product_details._id}}product_total">{{subTotal}}</td>
+                                    </tr> <!-- End Cart Single Item-->
+                                    {{/each}}
+                                </tbody>
+
+                                {{!-- {{this.product_details.product}} --}}
+                                {{/with}}
+                            </table>
+                        </div>
+                        {{!-- <div class="cart_submit">
+                            <button class="btn btn-md btn-golden" type="submit">update cart</button>
+                        </div> --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- End Cart Table -->
+
+    <!-- Start Coupon Start -->
+    <div class="coupon_area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    {{!-- <div class="coupon_code left" data-aos="fade-up" data-aos-delay="200">
+                        <h3>Coupon</h3>
+                        <div class="coupon_inner">
+                            <p>Enter your coupon code if you have one.</p> 
+                            <input id="coupon" class="mb-2" placeholder="Coupon code" type="text">
+                            <button id="coupon-btn" class="btn btn-md btn-golden" onclick="ApplyCoupon('{{id}}','{{cartdetails.total}}')">Apply
+                                coupon</button>
+                        </div>
+                         <span id="message" class="mb-3 pb-3 text-success"></span>
+                            <span id="errormessage" class="text-danger"></span>
+                    </div> --}}
+                </div>
+                {{#with cartdetails}}
+                <div class="col-lg-6 col-md-6">
+                    <div class="coupon_code right" data-aos="fade-up" data-aos-delay="400">
+                        <h3>Cart Totals</h3>
+                        <div class="coupon_inner">
+                            <div class="cart_subtotal">
+                                <p>Subtotal:</p>
+                                <p id="cart_amount">{{this.total}}</p>
+                            </div>
+                            {{!-- <div class="cart_subtotal ">
+                                <p>Shipping</p>
+                                <p class="cart_amount"><span>Flat Rate:</span> $255.00</p>
+                            </div> --}}
+                            <div class="cart_subtotal ">
+                                <p>Shipping:</p>
+                                <p class="cart_amount text-success" id="discountprice">free</p>
+                            </div>
+                            {{!-- <a href="#">Calculate shipping</a> --}}
+
+                            <div class="cart_subtotal">
+                                <p>Total:</p>
+                                <p id="alltotal">{{this.total}}</p>
+                            </div>
+                            <div class="checkout_btn">
+                                <a href="/checkout" class="btn btn-md btn-golden">Proceed to Checkout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{/with}}
+            </div>
+        </div>
+    </div> <!-- End Coupon Start -->
+</div> <!-- ...:::: End Cart Section:::... -->
+<br><br>
+
+
+<script>
+
+    //------------------Delete Product from Cart-----------------//
+
+    const deleteCartProduct = async (productId) => {
+        try {
+            const response = await axios({
+                method: 'post',
+                url: '/delete-cart-product',
+                data: {
+                    productId
+                }
+            })
+            if (response.data.status == 'success') {
+                location.reload()
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    //------------------Increment and Decrement---------------------//
+
+
+    const quantityUpdate = async (id, count) => {
+        try {
+            const quantity = parseInt(document.getElementById(`${id}quantity`).value);
+            const price = parseInt(document.getElementById(`${id}product_price`).innerHTML);
+            console.log(price);
+            if (count == -1 && quantity == 1) {
+                document.getElementById(`${id}decrement`).disabled = true;
+            } else {
+                const response = await axios({
+                    method: 'post',
+                    url: `/cart/increment/${id}`,
+                    data: {
+                        quantity,
+                        count,
+                    }
+                })
+                if (response.data.status == 'success') {
+                    const discountdata = document.getElementById('discountprice').innerHTML = '';
+                    console.log(discountdata)
+                    
+                    document.getElementById(`${id}quantity`).value = quantity + count;
+                    document.getElementById(`${id}product_total`).innerHTML = price * (quantity + count)
+                    document.getElementById('alltotal').innerHTML = price * (quantity + count)
+
+                }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+</script>

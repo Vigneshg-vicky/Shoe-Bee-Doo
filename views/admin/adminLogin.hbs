@@ -1,0 +1,221 @@
+<style>
+    *{
+  margin: 0;
+  paddiang: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+body{
+  width: 100%;
+  height: 100vh;
+}
+
+.container{
+  width: 500px;
+  margin: auto;
+  margin-top: 40px;
+}
+
+form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 30px;
+}
+
+h1{
+  text-align: center;
+  letter-spacing: 2px;
+}
+
+form div{
+ display: flex;
+ flex-direction: column;
+ width: 100%;
+}
+
+.label, form div input{
+  font-size: 1.3rem;
+}
+
+.label {
+  transform: translateY(100%) scale(0.9) translateX(-20px);
+  transition: 0.2s linear;
+  position: relative;
+  opacity: 0.7;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-size: 1rem;
+}
+
+.label-up{
+  transform: translateY(0) translateX(0);
+  opacity: 1;
+}
+
+.leave-down{
+  transform: translateY(0);
+}
+
+
+form div input{
+  height: 2rem;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #000;
+  position: relative;
+  background-color: transparent;
+  margin-bottom: 25px;
+  outline: none;
+  font-size: 1.3rem;
+  padding: 2px;
+  color: rgba(0,0,0,0.7)
+}
+
+form div button{
+  margin: 20px 20%;
+  font-size: 1rem;
+  padding: 8px 0;
+  border: none;
+  transition: 0.2s ease-in;
+}
+
+form div button:hover{
+  background-color: rgb(197, 197, 197);
+}
+
+form div small{
+  font-size: 1rem;
+  border: none;
+  text-align: center;
+  color: rgb(35, 168, 242);
+}
+
+</style>
+
+                {{!-- Body --}}
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+<div class="container">
+  <h1>Sign Up</h1>
+  <form id="submit-form">
+    {{!-- <div>
+      <p class="label email">Email</p>
+      <input type="email" name="email">
+    </div> --}}
+    <span id="error"></span>
+    <div>
+      <p class="label username">Email</p>
+      <input type="text" id="email" name="email">
+    </div>
+    <div>
+      <p class="label password">Password</p>
+      <input type="password" id="password" name="password">
+    </div>
+    {{!-- <div>
+      <p class="label confirm-password">Confirm Password</p>
+      <input type="password" name="confirm">
+    </div> --}}
+    <div clas="btn">
+      <button>Sign Up</button>
+      {{!-- <small>forgot password?</small> --}}
+    </div>
+  </form>
+</div>
+
+
+{{!-- ------------Script tag----------- --}}
+
+<script>
+    const labels = document.querySelectorAll('.label')
+const formInputs = document.querySelectorAll('form div input')
+
+
+formInputs.forEach(formInput => {
+
+  formInput.addEventListener('mouseover',() => {
+    formInput.previousElementSibling.classList.add('label-up')
+  })
+
+  formInput.addEventListener('mouseleave',() => {
+    if(formInput.value !== ''){
+      formInput.previousElementSibling.classList.add('label-up')
+      return
+    }
+    if(document.activeElement === formInput){
+      formInput.previousElementSibling.classList.add('label-up')
+      return
+    }
+    formInput.previousElementSibling.classList.remove('label-up')
+  })
+  
+   formInput.addEventListener('blur',() => {
+     if(formInput.value !== ''){
+       formInput.previousElementSibling.classList.add('label-up')
+       return
+     }
+    formInput.previousElementSibling.classList.remove('label-up')
+  })
+  
+})
+
+</script>
+
+{{!-- -------------VALIDATION------------ --}}
+
+<script>
+	$(document).ready(function () {
+		$("#submit-form").validate({
+			rules: {
+				email: {
+					required: true,
+				},
+				password: {
+					required: true,
+				},
+			},
+			messages: {
+
+				email: {
+					required: "Enter a valid email address",
+				},
+				password: {
+					required: "Enter your password",
+				},
+			},
+			submitHandler: function (form, e) {
+				login();
+			},
+		});
+	});
+
+	// -----------------AXIOS-------------------//
+
+	async function login() {
+		try {
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+			const response = await axios({
+				method: 'post',
+				url: '/admin/login',
+				data: {
+					email,
+					password,
+				}
+			})
+			console.log(response.data)
+			if (response.data.status == 'success') {
+				location.assign('/admin/home')
+			}
+		}
+		catch (error) {
+			console.log({error});
+			 document.getElementById('error').innerHTML = error.response.data.message;
+			window.addEventListener('click', () => {
+				document.getElementById('error').innerHTML = "";
+			})
+		}
+	}
+
+</script>
