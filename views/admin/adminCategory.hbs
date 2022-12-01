@@ -44,17 +44,19 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="/admin/addCategory" method="post">
+                        {{!-- <form action="/admin/addCategory" method="post"> --}}
                             <div class="modal-body mx-3">
                                 <div class="md-form mb-5">
+                                    <span id="msg" class="text-danger"></span>
                                     {{!-- <i class="fas fa-envelope prefix grey-text"></i> --}}
-                                    <input type="text" name="name" id="defaultForm-email" class="form-control validate">
+                                    <input type="text" value="" name="name" id="defaultForm-email"
+                                        class="form-control validate">
                                     <label data-error="wrong" data-success="right" for="defaultForm-email">Category
                                         Name</label>
                                 </div>
 
                                 <div class="md-form mb-4">
-                                    <input type="text" name="details" id="defaultForm-pass"
+                                    <input type="text" value="" name="details" id="defaultForm-pass"
                                         class="form-control validate">
                                     <label data-error="wrong" data-success="right"
                                         for="defaultForm-pass">Description</label>
@@ -63,9 +65,9 @@
                             </div>
 
                             <div class="modal-footer d-flex justify-content-center">
-                                <button type="submit" class="btn btn-primary">Add Category</button>
+                                <button onclick="AddCategory(event)" class="btn btn-primary">Add Category</button>
                             </div>
-                        </form>
+
                     </div>
                 </div>
             </div>
@@ -100,7 +102,7 @@
                                     data-bs-whatever="@mdo"><i class="fa-solid fa-pen-to-square"></i></a>
 
                                 {{!----------- Edit Category Modal ------------}}
-                                
+
 
                                 <div class="modal fade" id="editModal{{@index}}" tabindex="-1"
                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -123,10 +125,10 @@
                                                         <label for="message-text"
                                                             class="col-form-label">Description</label>
                                                         <textarea class="form-control" id="message-text"
-                                                            name="details" >{{this.description}}</textarea>
+                                                            name="details">{{this.description}}</textarea>
                                                     </div>
 
-                                            </div>  
+                                            </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">Close</button>
@@ -144,7 +146,8 @@
 
                                 {{!-- Delete Button --}}
 
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{@index}}"><i class="fa-solid fa-trash-can danger"></i></a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{@index}}"><i
+                                        class="fa-solid fa-trash-can danger"></i></a>
 
                                 {{!----------- DELETE Category Modal ------------}}
 
@@ -186,6 +189,40 @@
 
 </div>
 <!-- End of Main Content -->
+
+<script>
+    async function AddCategory(e) {
+        try {
+            e.preventDefault();
+            const details = document.getElementById('defaultForm-pass').value;
+            const name = document.getElementById('defaultForm-email').value;
+            if (details !== '' && name !== '') {
+
+                console.log(name, details);
+
+                const response = await axios({
+                    method: 'post',
+                    url: '/admin/addCategory',
+                    data: {
+                        name,
+                        details,
+                    }
+                })
+                if (response.data.status == 'found') {
+                    const message = response.data.message;
+                    document.getElementById('msg').innerHTML = message;
+
+                } else if (response.data.status == 'success') {
+                    location.reload();
+                }
+            }else{
+                document.getElementById('msg').innerHTML = 'Enter the details'
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+</script>
 
 
 

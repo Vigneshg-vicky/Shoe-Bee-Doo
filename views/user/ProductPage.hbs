@@ -140,7 +140,12 @@
                                 </ul>
                                 <a href="#" class="customer-review ml-2">(customer review )</a>
                             </div>
+                            {{#if price}}
                             <div class="price">₹{{this.originalprice}}</div>
+                            {{else}}
+                            <div class="price"><del class="text-danger"> ₹{{this.originalprice}} </del>{{#if Discount}}
+                                %{{Discount}} {{/if}} <br> ₹{{this.discountprice}}</div>
+                            {{/if}}
                             {{!-- <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam fringilla augue nec
                                 est
                                 tristique auctor. Donec non est at libero vulputate rutrum. Morbi ornare lectus quis
@@ -163,7 +168,7 @@
                                         <input min="1" max="100" value="1" type="number">
                                     </div>
                                 </div> --}}
-
+                                {{#if ../User}}
                                 {{#gt this.stock 1}}
                                 <div class="product-add-to-cart-btn">
                                     {{!-- <a href="/add-to-cart/{{this._id}}">--}}
@@ -172,24 +177,30 @@
                                 </div>
                                 {{else}}
 
+
                                 <div class="product-out-of-stock">
                                     <h4 class="title text-danger">Out Of Stock</h4>
                                 </div>
 
                                 {{/gt}}
 
+
                             </div>
                             <!-- Start  Product Details Meta Area-->
-                            <div class="product-details-meta mb-20">
+                            {{!-- <div class="product-details-meta mb-20">
                                 <br><a href="/wishlist" class="icon-space-right"><i class="icon-heart"></i>Add to
                                     wishlist</a>
-                                {{!-- <a href="compare.html" class="icon-space-right"><i
-                                        class="icon-refresh"></i>Compare</a> --}}
-                            </div> <!-- End  Product Details Meta Area-->
+                                <a href="compare.html" class="icon-space-right"><i
+                                        class="icon-refresh"></i>Compare</a>
+                            </div> <!-- End  Product Details Meta Area--> --}}
+                            {{else}}
+                            <span class="h4">Login To Buy the Product</span>
+                            {{/if}}
+
                         </div> <!-- End Product Variable Area -->
 
                         <!-- Start  Product Details Catagories Area-->
-                        <div class="product-details-catagory mb-2">
+                        {{!-- <div class="product-details-catagory mb-2"> --}}
                             {{!-- <span class="title">CATEGORIES:</span>
                             <ul>
                                 <li><a href="#">BAR STOOL</a></li>
@@ -232,9 +243,9 @@
                             <li><a class="nav-link" data-bs-toggle="tab" href="#specification">
                                     Specification
                                 </a></li>
-                            <li><a class="nav-link" data-bs-toggle="tab" href="#review">
+                            {{!-- <li><a class="nav-link" data-bs-toggle="tab" href="#review">
                                     Reviews (1)
-                                </a></li>
+                                </a></li> --}}
                         </ul> <!-- End Product Details Tab Button -->
 
                         <!-- Start Product Details Tab Content -->
@@ -289,7 +300,7 @@
                                     </div>
                                 </div> <!-- End Product Details Tab Content Singel -->
                                 <!-- Start Product Details Tab Content Singel -->
-                                <div class="tab-pane" id="review">
+                                {{!-- <div class="tab-pane" id="review">
                                     <div class="single-tab-content-item">
                                         <!-- Start - Review Comment -->
                                         <ul class="comment">
@@ -451,7 +462,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                </div> <!-- End Product Details Tab Content Singel -->
+                                </div> <!-- End Product Details Tab Content Singel --> --}}
                             </div>
                         </div> <!-- End Product Details Tab Content -->
 
@@ -480,6 +491,7 @@
             </div>
         </div>
         <!-- Start Section Content Text Area -->
+
         <div class="product-wrapper" data-aos="fade-up" data-aos-delay="0">
             <div class="container">
                 <div class="row">
@@ -489,32 +501,48 @@
                             <div class="swiper-container product-default-slider-4grid-1row">
                                 <!-- Additional required wrapper -->
                                 <div class="swiper-wrapper">
+                                    {{#each relatedProducts}}
                                     <!-- End Product Default Single Item -->
                                     <!-- Start Product Default Single Item -->
                                     <div class="product-default-single-item product-color--golden swiper-slide">
                                         <div class="image-box">
-                                            <a href="product-details-default.html" class="image-link">
-                                                <img src="/images/product/default/home-1/default-9.jpg" alt="">
-                                                <img src="/images/product/default/home-1/default-10.jpg" alt="">
+                                            <a href="/product/{{this._id}}" class="image-link">
+                                                <img src="{{this.urls.[0]}}" alt="">
+                                                <img src="{{this.urls.[1]}}" alt="">
                                             </a>
+                                            {{#if ../User}}
                                             <div class="action-link">
                                                 <div class="action-link-left">
-                                                    <a href="#" data-bs-toggle="modal"
-                                                        data-bs-target="#modalAddcart">Add to Cart</a>
+                                                    <button class="btn btn-md text-white"
+                                                        onclick="AddToCart('{{this._id}}')" type="submit">Add To
+                                                        Cart</button>
+                                                    {{!-- <a onclick="AddToCart('{{this._id}}')">Add to
+                                                        Cart</a> --}}
                                                 </div>
                                                 <div class="action-link-right">
-                                                    <a href="#" data-bs-toggle="modal"
+                                                    {{!-- <a href="" data-bs-toggle="modal"
                                                         data-bs-target="#modalQuickview"><i
-                                                            class="icon-magnifier"></i></a>
-                                                    <a href="wishlist.html"><i class="icon-heart"></i></a>
-                                                    <a href="compare.html"><i class="icon-shuffle"></i></a>
+                                                            class="icon-magnifier"></i></a> --}}
+                                                    <a style="cursor:pointer ;">
+                                                        {{#if this.wishlist}}
+                                                        <i id="heart{{this._id}}"
+                                                            onclick="addToWishlist('{{this._id}}')" class="fa fa-heart"
+                                                            aria-hidden="true"></i>
+                                                        {{else}}
+                                                        <i id="heart{{this._id}}"
+                                                            onclick="addToWishlist('{{this._id}}')"
+                                                            class="fa fa-heart-o" aria-hidden="true"></i>
+                                                        {{/if}}
+                                                    </a>
+
                                                 </div>
                                             </div>
+                                            {{else}}
+                                            {{/if}}
                                         </div>
                                         <div class="content">
                                             <div class="content-left">
-                                                <h6 class="title"><a href="product-details-default.html">Epicuri per
-                                                        lobortis</a></h6>
+                                                <h6 class="title"><a href="/product/{{this._id}}">{{this.product}}</a></h6>
                                                 <ul class="review-star">
                                                     <li class="fill"><i class="ion-android-star"></i></li>
                                                     <li class="fill"><i class="ion-android-star"></i></li>
@@ -523,25 +551,40 @@
                                                     <li class="empty"><i class="ion-android-star"></i></li>
                                                 </ul>
                                             </div>
-                                            <div class="content-right">
-                                                <span class="price">$68</span>
-                                            </div>
+                                                <div class="content-right">
+                                                                {{#if discountprice}}
+                                                                {{#gt productDiscount categoryDiscount}}
+                                                                <span class="price">₹{{this.discountprice}}
+                                                                    {{productDiscount}}% OFF</span>
+                                                                {{else}}
+                                                                <span class="price">₹{{this.discountprice}}
+                                                                    {{categoryDiscount}}% OFF</span>
+                                                                {{/gt}}
+                                                                {{else}}
+                                                                <span class="price">₹{{this.originalprice}}</span>
+                                                                {{/if}}
+                                                            </div>
 
                                         </div>
                                     </div>
                                     <!-- End Product Default Single Item -->
+                                    {{/each}}
                                 </div>
                             </div>
+
                             <!-- If we need navigation buttons -->
                             <div class="swiper-button-prev"></div>
                             <div class="swiper-button-next"></div>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <!-- End Product Default Slider Section -->
+    <br><br><br>
+
 
     <!-- material-scrolltop button -->
     <button class="material-scrolltop" type="button"></button>

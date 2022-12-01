@@ -31,7 +31,7 @@ router.get("/", adminController.getAdminLogin);
 
 router.post("/login", authController.postAdminLogin);
 
-//--------GET Admin Home-----------//
+//--------GET Admin Home DashBoard-----------//
 
 router.get("/home", adminController.AdminHome);
 

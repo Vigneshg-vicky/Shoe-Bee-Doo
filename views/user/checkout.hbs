@@ -129,7 +129,7 @@
                             <h3>Coupon</h3>
                             <div class="coupon_inner">
                                 <p>Enter your coupon code if you have one.</p>
-                                <input id="coupon" class="mb-2" placeholder="Coupon code" type="text">
+                                <input id="coupon" class="mb-2" placeholder="Coupon code" type="text" value="">
                                 <button id="coupon-btn" class="btn btn-md btn-golden"
                                     onclick="ApplyCoupon('{{id}}','{{CheckOutProducts.total}}')">Apply
                                     coupon</button>
@@ -181,12 +181,14 @@
                             <div class="col-12 ">
                                 <div class="default-form-box">
                                     <label for="address">Payment Method </label>
+                                    <span id="nofund" class="text-danger"></span> {{!92388}}
                                     <select class="country_option nice-select wide" name="paymentMethod"
                                         id="paymentMethod">
                                         <option value="" selected>Choose Payment Method</option>
                                         <option value="COD">Cash On Delivery</option>
                                         <option value="RAZORPAY">Razorpay</option>
                                         <option value="PAYPAL">PayPal</option>
+                                        <option value="WALLET">Wallet Pay</option>
                                         {{!-- <option value="WALLET">Wallet</option> --}}
                                     </select>
                                 </div>
@@ -298,26 +300,26 @@
 
     //--------------APPLY COUPON---------------//
 
-    async function ApplyCoupon(userId,total) {
+    async function ApplyCoupon(userId, total) {
         try {
-            console.log(userId,total)
+            console.log(userId, total)
             const coupon = document.getElementById('coupon').value;
             const response = await axios({
-                method:'post',
-                url:'/apply-coupon',
-                data:{
+                method: 'post',
+                url: '/apply-coupon',
+                data: {
                     userId,
                     coupon,
                     total,
                 }
             })
-            if(response.data.status == 'success'){
+            if (response.data.status == 'success') {
                 document.getElementById('errormessage').innerHTML = "";
                 const discount = response.data.discounted;
                 document.getElementById('coupon-btn').disabled = true;
                 document.getElementById('coupon').disabled = true;
-                document.getElementById('discountprice').innerHTML = '₹'+discount;
-                document.getElementById('alltotal').innerHTML = '₹'+(total-discount);
+                document.getElementById('discountprice').innerHTML = '₹' + discount;
+                document.getElementById('alltotal').innerHTML = '₹' + (total - discount);
                 document.getElementById('message').innerHTML = response.data.message;
 
             }
@@ -335,6 +337,7 @@
             const addressId = document.getElementById('addresses').value;
             const paymentMethod = document.getElementById('paymentMethod').value;
             const coupon = document.getElementById('coupon').value;
+
             //const totalAmount = document.getElementById('alltotal').innerHTML;
             if (addressId != '' && paymentMethod != '') {
 
@@ -391,7 +394,13 @@
             }
 
         } catch (error) {
-            console.log(error)
+            if (error.response.data.status == 'no-fund') {
+                document.getElementById('nofund').innerHTML = "The Wallet doesn't have enough money!"
+            } else {
+                console.log(error.response.data.message)
+                console.log('THis is the error')
+                console.log(error)
+            }
         }
     }
 
@@ -462,7 +471,7 @@
         try {
             const response = await axios({
                 method: 'post',
-                url: 'verify-payment',
+                url: '/verify-payment',
                 data: {
                     payment,
                     order

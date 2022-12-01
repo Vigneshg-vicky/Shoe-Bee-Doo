@@ -49,6 +49,7 @@
                             </div>
                             <div class="modal-body">
 
+                                <span id="msg" class="text-danger"></span>
                                 <div class="mb-3">
                                     <label for="recipient-name" class="col-form-label">Brand Name:</label>
                                     <input type="text" name="brand" class="form-control" id="recipient-name">
@@ -60,9 +61,9 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Add Brand</button>
+                                <button onclick="AddBrand(event)" class="btn btn-primary">Add Brand</button>
                             </div>
-                        </form>
+
                     </div>
                 </div>
             </div>
@@ -135,7 +136,8 @@
 
                                 {{!-- Delete Button --}}
 
-                                <a href="" data-bs-toggle="modal" data-bs-target="#deleteModal{{@index}}"><i class="fa-solid fa-trash-can"></i></a>
+                                <a href="" data-bs-toggle="modal" data-bs-target="#deleteModal{{@index}}"><i
+                                        class="fa-solid fa-trash-can"></i></a>
 
                                 {{!----------- DELETE Brands Modal ------------}}
 
@@ -195,3 +197,33 @@
 
 <!-- Page level custom scripts -->
 <script src="js/demo/datatables-demo.js"></script>
+
+<script>
+    async function AddBrand(e) {
+        e.preventDefault();
+        const brand = document.getElementById('recipient-name').value;
+        const details = document.getElementById('message-text').value;
+
+        console.log(details)
+
+        if (brand !== '' && details !== '') {
+
+
+            const response = await axios({
+                method: 'post',
+                url: '/admin/addBrand',
+                data: {
+                    brand,
+                    details,
+                }
+            })
+            if (response.data.status == 'found') {
+                document.getElementById('msg').innerHTML = response.data.message;
+            } else if (response.data.status == 'success') {
+                location.reload();
+            }
+        } else {
+            document.getElementById('msg').innerHTML = 'Enter the details!'
+        }
+    }
+</script>

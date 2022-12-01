@@ -9,6 +9,7 @@ const cloudinary = require("../utils/cloudinary");
 const adminCollection = require("./config/collection");
 const collection = require("./config/collection");
 const commonController = require("./commonControllers");
+const { order } = require("paypal-rest-sdk");
 
 // CLOUDINARY
 
@@ -23,10 +24,92 @@ module.exports = {
     }
   },
 
-  //------------------Render Admin Home Page--------------------//
+  //------------------Render Admin Home Page DashBoard--------------------//
 
-  AdminHome: (req, res) => {
-    res.render("admin/adminHome", { title: "Admin Home", admin: true });
+  AdminHome: async (req, res) => {
+    try {
+      const userCount = await db
+        .getdb()
+        .collection(collection.USER_COLLECTION)
+        .count();
+      const productCount = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .count();
+
+      const agg = [
+        {
+          $project: {
+            Date: "$Date",
+            Products: "$Products",
+            cancel: 1,
+          },
+        },
+        {
+          $unwind: {
+            path: "$Products",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $match: {
+            cancel: false,
+          },
+        },
+        {
+          $project: {
+            revenue: "$Products.product_details.discountprice",
+            TotalRevenue: {
+              $sum: ["$Products.product_details.discountprice"],
+            },
+          },
+        },
+      ];
+
+      const TotalAmount = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .aggregate(agg)
+        .toArray();
+      let Revenue = 0;
+      const TOTALREVENUE = TotalAmount.map((data) => {
+        Revenue = Revenue + data.TotalRevenue;
+      });
+
+      if (TotalAmount.length > 0) {
+        Revenue = Revenue;
+      } else {
+        Revenue = 0;
+      }
+
+      const orderStatus = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .aggregate([
+          {
+            $group: {
+              _id: "$OrderStatus",
+              status: {
+                $sum: 1,
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      console.log(orderStatus);
+
+      res.render("admin/adminHome", {
+        title: "Admin Home",
+        admin: true,
+        userCount,
+        productCount,
+        Revenue,
+        orderStatus,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   },
 
   //------------------Render Admin User Details Page--------------------//
@@ -255,13 +338,7 @@ module.exports = {
     try {
       const discount = Number(req.body.categoryDiscount);
       const categoryId = req.body.category;
-      await db
-        .getdb()
-        .collection(collection.PRODUCT_COLLECTION)
-        .updateMany(
-          { subcategory: mongodb.ObjectId(categoryId) },
-          { $set: { categoryDiscount: discount } }
-        );
+
       await db
         .getdb()
         .collection(collection.CATEGORY_COLLECTION)
@@ -269,6 +346,43 @@ module.exports = {
           { _id: mongodb.ObjectId(categoryId) },
           { $set: { categoryDiscount: discount } }
         );
+
+      await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateMany(
+          { subcategory: mongodb.ObjectId(categoryId) },
+          { $set: { categoryDiscount: discount } }
+        );
+
+      const checkProduct = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find({
+          subcategory: mongodb.ObjectId(categoryId),
+        })
+        .toArray();
+
+      const updatedProduct = await checkProduct.map(async (item) => {
+        if (item.categoryDiscount >= item.productDiscount) {
+          let disc =
+            item.originalprice -
+            (item.originalprice * item.categoryDiscount) / 100;
+          item.discountprice = Math.ceil(disc);
+        } else if (item.categoryDiscount < item.productDiscount) {
+          let disc =
+            item.originalprice -
+            (item.originalprice * item.productDiscount) / 100;
+          item.discountprice = Math.ceil(disc);
+        } else if (item.categoryDiscount == 0 && item.productDiscount == 0) {
+          item.discountprice = item.originalprice;
+        }
+        return await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .updateOne({ _id: mongodb.ObjectId(item._id) }, { $set: item });
+      });
+
       res.redirect("/admin/offers");
     } catch (err) {
       console.log(err);
@@ -282,13 +396,56 @@ module.exports = {
       const categoryId = req.params.id;
       const discount = Number(req.body.discount);
       console.log(req.body, req.params.id);
-      const change = await db
+
+      //************Change offer in category collection
+      await db
         .getdb()
         .collection(collection.CATEGORY_COLLECTION)
         .updateOne(
           { _id: mongodb.ObjectId(categoryId) },
           { $set: { categoryDiscount: discount } }
         );
+      //************Change offer in product collection
+      await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateMany(
+          { subcategory: mongodb.ObjectId(categoryId) },
+          { $set: { categoryDiscount: discount } }
+        );
+
+      //--------Take the products of the category from product collection
+
+      const checkProduct = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find({
+          subcategory: mongodb.ObjectId(categoryId),
+        })
+        .toArray();
+
+      //-------Calculating the offer price according to the greatest offer
+
+      const updatedProduct = await checkProduct.map(async (item) => {
+        if (item.categoryDiscount >= item.productDiscount) {
+          let disc =
+            item.originalprice -
+            (item.originalprice * item.categoryDiscount) / 100;
+          item.discountprice = Math.ceil(disc);
+        } else if (item.categoryDiscount == 0 && item.productDiscount == 0) {
+          item.discountprice = 0;
+        } else if (item.categoryDiscount < item.productDiscount) {
+          let disc =
+            item.originalprice -
+            (item.originalprice * item.productDiscount) / 100;
+          item.discountprice = Math.ceil(disc);
+        }
+        return await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .updateOne({ _id: mongodb.ObjectId(item._id) }, { $set: item });
+      });
+
       res.redirect("/admin/offers");
     } catch (err) {
       console.log(err);
@@ -299,21 +456,56 @@ module.exports = {
 
   AddProductOffer: async (req, res) => {
     try {
-      // console.log(req.body)
-      // if(req.body.product){
-      //   console.log('This is true')
-      // }else{
-      //   console.log('Not working')
-      // }
       const productId = req.body.product;
       const discount = Number(req.body.productDiscount);
-      const add = await db
+
+      //-----------Changing Product discount in Product Collections----------//
+
+      await db
         .getdb()
         .collection(collection.PRODUCT_COLLECTION)
         .updateOne(
           { _id: mongodb.ObjectId(productId) },
           { $set: { productDiscount: discount } }
         );
+
+      //--------Take the products from product collection
+
+      const checkProduct = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(productId) });
+
+      console.log(checkProduct.productDiscount);
+
+      let disc;
+
+      if (checkProduct.productDiscount >= checkProduct.categoryDiscount) {
+        disc =
+          checkProduct.originalprice -
+          (checkProduct.originalprice * checkProduct.productDiscount) / 100;
+        checkProduct.discountprice = Math.ceil(disc);
+      } else if (
+        checkProduct.productDiscount == 0 &&
+        checkProduct.categoryDiscount == 0
+      ) {
+        checkProduct.discountprice = 0;
+      } else if (checkProduct.productDiscount < checkProduct.categoryDiscount) {
+        disc =
+          checkProduct.originalprice -
+          (checkProduct.originalprice * checkProduct.categoryDiscount) / 100;
+        checkProduct.discountprice = Math.ceil(disc);
+      }
+      console.log(checkProduct.discountprice);
+
+      await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateOne(
+          { _id: mongodb.ObjectId(productId) },
+          { $set: { discountprice: checkProduct.discountprice } }
+        );
+
       res.redirect("/admin/offers");
     } catch (err) {
       console.log(err);
@@ -326,13 +518,53 @@ module.exports = {
     try {
       const discount = Number(req.body.discount);
       const productId = req.params.id;
-      const edit = await db
+
+      //-----------update product discount----------//
+
+      await db
         .getdb()
         .collection(collection.PRODUCT_COLLECTION)
         .updateOne(
           { _id: mongodb.ObjectId(productId) },
           { $set: { productDiscount: discount } }
         );
+      //---Changing Product discount in Product Collections---//
+
+      const checkProduct = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(productId) });
+
+      console.log(checkProduct.productDiscount);
+
+      let disc;
+
+      if (checkProduct.productDiscount >= checkProduct.categoryDiscount) {
+        disc =
+          checkProduct.originalprice -
+          (checkProduct.originalprice * checkProduct.productDiscount) / 100;
+        checkProduct.discountprice = Math.ceil(disc);
+      } else if (
+        checkProduct.productDiscount == 0 &&
+        checkProduct.categoryDiscount == 0
+      ) {
+        checkProduct.discountprice = 0;
+      } else if (checkProduct.productDiscount < checkProduct.categoryDiscount) {
+        disc =
+          checkProduct.originalprice -
+          (checkProduct.originalprice * checkProduct.categoryDiscount) / 100;
+        checkProduct.discountprice = Math.ceil(disc);
+      }
+      console.log(checkProduct.discountprice);
+
+      await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .updateOne(
+          { _id: mongodb.ObjectId(productId) },
+          { $set: { discountprice: checkProduct.discountprice } }
+        );
+
       res.redirect("/admin/offers");
     } catch (err) {
       console.log(err);
@@ -435,9 +667,65 @@ module.exports = {
 
   //-----------------GET SALES PAGE--------------//
 
-  GetSales: (req, res) => {
+  GetSales: async (req, res) => {
     try {
-      res.render("admin/salesReport", { admin: true, title: "Sales Report" });
+      const salesData = [
+        {
+          $project: {
+            Date: "$Date",
+            Products: "$Products",
+          },
+        },
+        {
+          $unwind: {
+            path: "$Products",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            Date: "$Date",
+            productName: "$Products.product_details.product",
+            quantity: "$Products.quantity",
+            price: "$Products.product_details.originalprice",
+            discountPrice: {
+              $subtract: [
+                "$Products.product_details.originalprice",
+                "$Products.product_details.discountprice",
+              ],
+            },
+            revenue: {
+              $multiply: [
+                "$Products.product_details.discountprice",
+                "$Products.quantity",
+              ],
+            },
+          },
+        },
+      ];
+
+      const Sales = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .aggregate(salesData)
+        .toArray();
+
+      Sales.map((data) => {
+        console.log(data);
+        data.Date = data.Date.toString()
+          .split(" ")
+          .slice(1, 4)
+          .toString()
+          .replaceAll(",", "/");
+      });
+
+      // console.log(Sales)
+
+      res.render("admin/salesReport", {
+        admin: true,
+        title: "Sales Report",
+        Sales,
+      });
     } catch (err) {
       console.log(err);
     }
@@ -514,13 +802,37 @@ module.exports = {
   AddCategory: async (req, res) => {
     try {
       const { name, details } = req.body;
-      const added = await db
+
+      console.log(name, details);
+
+      const ifCategory = await db
         .getdb()
-        .collection("Category")
-        .insertOne({ categoryName: name, description: details });
-      res.redirect("/admin/category");
+        .collection(collection.CATEGORY_COLLECTION)
+        .findOne({ categoryName: name });
+      if (ifCategory) {
+        res.json({
+          status: "found",
+          message: "Category already exists!",
+        });
+      } else {
+        const added = await db
+          .getdb()
+          .collection("Category")
+          .insertOne({ categoryName: name, description: details });
+
+        return res.status(200).json({
+          status: "success",
+          message: "Category added!",
+        });
+      }
+
+      // res.redirect("/admin/category");
     } catch (error) {
       console.log(error);
+      return res.status(400).json({
+        status: "failed",
+        message: error,
+      });
     }
   },
 
@@ -548,13 +860,35 @@ module.exports = {
   AddBrands: async (req, res) => {
     try {
       const { brand, details } = req.body;
-      const addBrand = await db
+
+      const checkBrands = await db
         .getdb()
-        .collection("Brands")
-        .insertOne({ BrandName: brand, description: details });
-      res.redirect("/admin/brands");
+        .collection(collection.BRAND_COLLECTION)
+        .findOne({ BrandName: brand });
+
+      // console.log(checkBrands)
+
+      if (checkBrands) {
+        return res.json({
+          status: "found",
+          message: "Brand already exists!",
+        });
+      } else {
+        const addBrand = await db
+          .getdb()
+          .collection(collection.BRAND_COLLECTION)
+          .insertOne({ BrandName: brand, description: details });
+        return res.status(200).json({
+          status: "success",
+          message: "Brand added!",
+        });
+      }
     } catch (error) {
       console.log(error);
+      return res.status(400).json({
+        status: "failed",
+        message: error,
+      });
     }
   },
 
@@ -626,8 +960,9 @@ module.exports = {
         originalprice: Number(req.body.orgprice),
         discountprice: Number(req.body.disprice),
         urls: urls,
+        date:new Date(),
       };
-      // console.log({product})
+      // console.log(product)
 
       const newProduct = await db
         .getdb()
@@ -779,7 +1114,17 @@ module.exports = {
     try {
       const orderId = req.params.id;
       const status = req.body.status;
+      const Orderss = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(orderId) });
       if (status == "cancel") {
+        const userId = Orderss.userId;
+        const WalletData = await db
+          .getdb()
+          .collection(collection.WALLET_COLLECTION)
+          .findOne({ userId: mongodb.ObjectId(userId) });
+
         const Cancel = await db
           .getdb()
           .collection(collection.ORDER_COLLECTION)

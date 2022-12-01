@@ -42,18 +42,15 @@
                         </li> --}}
                         <li> <a href="#orders" data-bs-toggle="tab"
                                 class="nav-link btn btn-block btn-md btn-black-default-hover active">Orders</a></li>
-                        <li><a href="#downloads" data-bs-toggle="tab"
-                                class="nav-link btn btn-block btn-md btn-black-default-hover">Downloads</a></li>
-                        <li><a href="#address" data-bs-toggle="tab"
+                        <li><a href="/address"
                                 class="nav-link btn btn-block btn-md btn-black-default-hover">Addresses</a></li>
                         <li><a href="#account-details" data-bs-toggle="tab"
                                 class="nav-link btn btn-block btn-md btn-black-default-hover">Account details</a>
                         </li>
-                        <li><a href="/wallet"
-                                class="nav-link btn btn-block btn-md btn-black-default-hover">Wallet</a>
+                        <li><a href="/wallet" class="nav-link btn btn-block btn-md btn-black-default-hover">Wallet</a>
                         </li>
-                        <li><a href="/logout"
-                                class="nav-link btn btn-block btn-md btn-black-default-hover">logout</a></li>
+                        <li><a href="/logout" class="nav-link btn btn-block btn-md btn-black-default-hover">logout</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -69,6 +66,11 @@
                     <div class="tab-pane fade active" id="orders">
                         <h4>Orders</h4>
                         <div class="table_page  table-responsive">
+                            {{#if EmptyCart}}
+                            <br>
+                            <span class="h4">You have not Ordered anything, Go Shop Now!😁</span><br><br>
+                            <a href="/shop"><button class="btn btn-md btn-black-default-hover">Go to Shop</button></a>
+                            {{else}}
                             <table>
                                 <thead>
                                     <tr>
@@ -101,13 +103,15 @@
                                         <td>
                                             {{#if cancel}}
                                             {{#if admin}}
-                                            <span style="color:red ;" class="badge badge-danger">{{this.OrderStatus}}</span>
+                                            <span style="color:red ;"
+                                                class="badge badge-danger">{{this.OrderStatus}}</span>
                                             {{else}}
                                             {{#eq OrderStatus 'Payment Failed'}}
                                             <span style="color:red ;"
                                                 class="badge badge-danger">{{this.OrderStatus}}</span>
                                             {{else}}
-                                            <span style="color:red ;" class="badge badge-danger">{{this.OrderStatus}}</span>
+                                            <span style="color:red ;"
+                                                class="badge badge-danger">{{this.OrderStatus}}</span>
                                             {{/eq}}
                                             {{/if}}
                                             {{!-- {{#eq OrderStatus 'Payment Failed'}}
@@ -115,8 +119,13 @@
                                             {{/eq}} --}}
                                             {{else}}
                                             {{#if delivered}}
-                                            <a href="/return-order">Return</a>
-                                            {{!-- <span style="color:green ;" class="badge badge-success">{{this.OrderStatus}}</span> --}}
+                                            {{#if return}}
+                                            <span style="color:rgb(40, 232, 40) ;"
+                                                class="badge text-success">{{this.OrderStatus}}</span>
+                                            {{else}}
+                                            <a href="" style="cursor:pointer ;"
+                                                onclick="returnOrder('{{this._id}}',event)">Return</a>
+                                            {{/if}}
                                             {{else}}
                                             <span id="cancel" style="cursor:pointer;"
                                                 onclick="CancelOrder('{{this._id}}')">Cancel Order</span>
@@ -129,35 +138,7 @@
                                     {{/each}}
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="downloads">
-                        <h4>Downloads</h4>
-                        <div class="table_page table-responsive">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Downloads</th>
-                                        <th>Expires</th>
-                                        <th>Download</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Shopnovilla - Free Real Estate PSD Template</td>
-                                        <td>May 10, 2018</td>
-                                        <td><span class="danger">Expired</span></td>
-                                        <td><a href="#" class="view">Click Here To Download Your File</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Organic - ecommerce html template</td>
-                                        <td>Sep 11, 2018</td>
-                                        <td>Never</td>
-                                        <td><a href="#" class="view">Click Here To Download Your File</a></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            {{/if}}
                         </div>
                     </div>
                     {{!-- <div class="tab-pane" id="address">
@@ -273,7 +254,7 @@
 <script>
     async function CancelOrder(OrderId) {
         try {
-            console.log('Cancel ORder reached')
+            //console.log('Cancel ORder reached')
             const response = await axios({
                 method: 'post',
                 url: '/cancel-order',
@@ -283,47 +264,30 @@
             });
             if (response.data.status == 'success') {
                 console.log(response.data);
-                window.reload(true);
+                location.reload(true);
 
             }
         } catch (error) {
             console.log(error);
         }
     }
-
-    async function ChangePassword(userId) {
-
-        const response = await axios({
-            method: 'get',
-            url: '/password',
-            data: {
-                userId
+    
+    async function returnOrder(orderId, e) {
+        try {
+            e.preventDefault();
+            const response = await axios({
+                method: 'post',
+                url: '/return-order',
+                data: {
+                    orderId,
+                }
+            })
+            if (response.data.status === 'success') {
+                location.reload();
             }
-        })
-    }
 
-    async function EditAddress(addressId) {
-
-        const response = await axios({
-            method: 'post',
-            url: '/edit-address',
-            data: {
-                addressId
-            }
-        })
-    }
-
-    async function DeleteAddress(addressId) {
-        console.log(addressId)
-        const response = await axios({
-            method: 'post',
-            url: '/delete-address',
-            data: {
-                addressId
-            }
-        })
-        if (response.data.status == 'success') {
-            location.reload();
+        } catch (error) {
+            console.log(error);
         }
     }
 

@@ -55,7 +55,7 @@
 
                     <tr>
                         {{!-- <td>{{product_details.urls.[0]}}</td> --}}
-                        <td><a href="/product"><img src="{{product_details.urls.[0]}}" class="img-thumbnail"
+                        <td><a href="/product/{{product_details._id}}"><img src="{{product_details.urls.[0]}}" class="img-thumbnail"
                                     {{!{{product_details.urls[0]}} width="80rem" alt="">
                             </a></td>
                         <td>{{product_details.product}}</td>
@@ -65,7 +65,13 @@
                             {{#if ../cancel}}
                             <span style="color:red ;" class="badge-danger">Cancelled</span>
                             {{else }}
+                            {{#if ../return}}
+                            <span style="color:rgb(15, 209, 70) ;" class="badge-success">Returned</span>
+                            {{else if delivered}}
                             <span style="color:rgb(15, 209, 70) ;" class="badge-success">Delivered</span>
+                            {{else}}
+                            <span style="color:rgb(15, 209, 70) ;" class="badge-success">Confirmed</span>
+                            {{/if}}
                             {{!-- <a style="cursor:pointer ;" class="view" onclick="cancelProduct('{{../../orderId}}','{{product_details._id}}')">cancel</a> --}}
                             {{/if}}
                         </td>

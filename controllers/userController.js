@@ -6,6 +6,7 @@ const session = require("express-session");
 const collection = require("./config/collection");
 const Razorpay = require("razorpay");
 const paypal = require("paypal-rest-sdk");
+const commonController = require("./commonControllers");
 paypal.configure({
   mode: "sandbox", //sandbox or live
   client_id: process.env.PAYPAL_CLIENT_ID,
@@ -49,7 +50,7 @@ module.exports = {
 
   OtpForgetPassword: async (req, res) => {
     try {
-      console.log(req.body);
+      // console.log(req.body);
       const password = req.body.password;
       const re_password = req.body.re_password;
       const number = req.body.number;
@@ -73,20 +74,249 @@ module.exports = {
 
   //---------------render home page---------------------//
 
-  getHomePage: (req, res) => {
-    res.render("user/userHome", { title: "Home Page", user: true });
+  getHomePage: async (req, res) => {
+    try {
+      const users = req.user;
+      const banner = await db
+        .getdb()
+        .collection(collection.BANNER_COLLECTION)
+        .find()
+        .toArray();
+      const products = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find()
+        .sort({ date: -1 })
+        .limit(4)
+        .toArray();
+
+      const wishlist = await db
+        .getdb()
+        .collection(collection.WISHLIST_COLLECTION)
+        .findOne({ userId: mongodb.ObjectId(users) });
+
+      if (wishlist) {
+        if (wishlist.products.length > 0) {
+          wishlist.products.forEach((item) => {
+            const index = products.findIndex(
+              (productss) =>
+                productss._id.toString() === item.productId.toString()
+            );
+            if (index !== -1) {
+              products[index].wishlist = true;
+            }
+          });
+        }
+      }
+
+      res.render("user/userHome", {
+        title: "Home Page",
+        user: true,
+        banner,
+        products,
+        users,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //------------SEARCH PAGE--------------//
+
+  Search: async (req, res) => {
+    try {
+      // console.log(req.query.search);
+      const word = req.query.search;
+      const trimmed = word.trim();
+      let product = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find({ product: { $regex: trimmed, $options: "i" } })
+        .toArray();
+      // console.log(product);
+      res.render("user/shopPage", {
+        title: "Searched Products",
+        user: true,
+        product,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   },
 
   //---------------render Shop page---------------------//
 
   GetShopPage: async (req, res) => {
     try {
+      const users = req.user;
+      // console.log('first',users)
+      // console.log(req.query.Men);
+      let sort1;
+      let sort2;
+      let query = {};
+      let sort = {};
+      const limit = 4;
+
+      let pageNo;
+      if (req.query?.catId) {
+        if (req.query?.catId == "Men") {
+          query = { category: "Men" };
+        } else if (req.query?.catId == "Women") {
+          query = { category: "Women" };
+        } else if (req.query?.catId == "Kids") {
+          query = { category: "Kids" };
+        }
+      }
+      if (req.query?.brandId) {
+        const brandId = req.query?.brandId;
+        query = { brand: mongodb.ObjectId(brandId) };
+      }
+      if (req.query?.sort) {
+        if (req.query?.sort == 1) {
+          sort1 = true;
+        } else {
+          sort2 = true;
+        }
+        // console.log(sortNo)
+        sort = { discountprice: req.query?.sort };
+      }
+      if (req.query?.page) {
+        // console.log(req.query?.page);
+        pageNo = req.query?.page - 1 || 0;
+        // console.log(pageNo);
+      }
+
+      const product = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find(query)
+        .skip(pageNo * limit)
+        .limit(limit)
+        .sort(sort)
+        .toArray();
+
       const products = await db
         .getdb()
         .collection(collection.PRODUCT_COLLECTION)
         .find()
         .toArray();
-      res.render("user/shopPage", { title: "Shop Page", user: true, products });
+
+      const wishlist = await db
+        .getdb()
+        .collection(collection.WISHLIST_COLLECTION)
+        .findOne({ userId: mongodb.ObjectId(users) });
+
+      if (wishlist) {
+        if (wishlist.products.length > 0) {
+          wishlist.products.forEach((item) => {
+            const index = product.findIndex(
+              (productss) =>
+                productss._id.toString() === item.productId.toString()
+            );
+            if (index !== -1) {
+              product[index].wishlist = true;
+            }
+          });
+        }
+      }
+
+      // console.log(product);
+      // to get number of page
+
+      let max = products.length / limit;
+      let m = Math.ceil(max);
+      let page = [];
+      for (let i = 1; i <= m; i++) {
+        page.push(i);
+      }
+
+      res.render("user/shopPage", {
+        title: "Shop Page",
+        user: true,
+        products,
+        product,
+        users,
+        page,
+        sort1,
+        sort2,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //------------CART AND WISHLIST COUNT------------//
+
+  Count: async (req, res) => {
+    try {
+      let cartCount;
+      const userId = req.user;
+      const userCart = await db
+        .getdb()
+        .collection(collection.CART_DATA)
+        .findOne({ userId: mongodb.ObjectId(userId) });
+
+   
+      if (userCart == null) {
+        cartCount = 0;
+      } else {
+        cartCount = userCart.products.length;
+      }
+
+      const userWishlist = await db
+        .getdb()
+        .collection(collection.WISHLIST_COLLECTION)
+        .findOne({ userId: mongodb.ObjectId(userId) });
+
+      let wishlistCount;
+      if (userWishlist == null) {
+        wishlistCount = 0;
+      } else {
+        wishlistCount = userWishlist.products.length;
+      }
+      res.status(200).json({
+        status: "success",
+        message: "Count is found!",
+        cart: cartCount,
+        wishlist: wishlistCount,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //-----------SORT PRODUCTS IN SHOP PAGE-------------//
+
+  SortProducts: async (req, res) => {
+    try {
+      const sort = req.body.sortValue;
+      if (sort == 1) {
+        const lowToHigh = await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .find()
+          .sort({ discountprice: 1 })
+          .toArray();
+
+        return res.status(200).json({
+          status: "lowToHigh",
+          message: "Low to High sort",
+          products: lowToHigh,
+        });
+      } else if (sort == -1) {
+        const highToLow = await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .find()
+          .sort({ discountprice: -1 })
+          .toArray();
+
+        return res.status(200).json({
+          status: "highToLow",
+          message: "High to Low sort",
+          products: highToLow,
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -96,6 +326,7 @@ module.exports = {
 
   GetProductPage: async (req, res) => {
     try {
+      const users = req.user;
       const id = req.params.id;
       const agg = [
         {
@@ -137,16 +368,51 @@ module.exports = {
         .collection(collection.PRODUCT_COLLECTION)
         .aggregate(agg)
         .toArray();
+      let Discount;
+      if (
+        ProductData.productDiscount == 0 &&
+        ProductData.categoryDiscount == 0
+      ) {
+        Discount = 0;
+      } else if (ProductData.productDiscount >= ProductData.categoryDiscount) {
+        Discount = ProductData.productDiscount;
+      } else if (ProductData.productDiscount < ProductData.categoryDiscount) {
+        Discount = ProductData.categoryDiscount;
+      }
+
+      let price;
+      if (ProductData.originalprice == ProductData.discountprice) {
+        price = true;
+      } else if (ProductData.originalprice >= ProductData.discountprice) {
+        price = false;
+      }
       const Productstock = await db
         .getdb()
         .collection(collection.PRODUCT_COLLECTION)
         .findOne({ _id: mongodb.ObjectId(id) });
-      console.log(Productstock);
+
+      const getProducts = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(id) });
+      const subId = getProducts.subcategory;
+
+      const relatedProducts = await db
+        .getdb()
+        .collection(collection.PRODUCT_COLLECTION)
+        .find({ subcategory: mongodb.ObjectId(subId) })
+        .toArray();
+
+      // console.log(Productstock);
       res.render("user/ProductPage", {
         title: "Product Page",
         user: true,
         ProductData,
         Productstock,
+        // users,
+        price,
+        Discount,
+        relatedProducts,
       });
     } catch (error) {
       console.log(error);
@@ -214,7 +480,7 @@ module.exports = {
       .collection(collection.CART_DATA)
       .aggregate(agg)
       .toArray();
-    console.log(cartdetails);
+    // console.log(cartdetails);
     if (!cartdetails) {
       res.render("user/emptyCart", { title: "Empty Cart", user: true });
     } else {
@@ -252,9 +518,15 @@ module.exports = {
               },
               { $inc: { "products.$.quantity": 1 } }
             );
+          const cart = await db
+            .getdb()
+            .collection(collection.CART_DATA)
+            .findOne({ userId: mongodb.ObjectId(user) });
+          const cartCount = cart.products.length;
           return res.status(200).json({
             status: "success",
             message: "Same Product added to Cart again",
+            cart: cartCount,
           });
         } else {
           await db
@@ -268,9 +540,16 @@ module.exports = {
                 },
               }
             );
-          return res
-            .status(200)
-            .json({ status: "success", message: "New Product added to Cart" });
+          const cart = await db
+            .getdb()
+            .collection(collection.CART_DATA)
+            .findOne({ userId: mongodb.ObjectId(user) });
+          const cartCount = cart.products.length;
+          return res.status(200).json({
+            status: "success",
+            message: "New Product added to Cart",
+            cart: cartCount,
+          });
         }
       } else {
         const added = await db
@@ -280,9 +559,16 @@ module.exports = {
             userId: mongodb.ObjectId(user),
             products: [{ productId: mongodb.ObjectId(proId), quantity: 1 }],
           });
-        return res
-          .status(200)
-          .json({ status: "success", message: "Product added to Cart" });
+        const cart = await db
+          .getdb()
+          .collection(collection.CART_DATA)
+          .findOne({ userId: mongodb.ObjectId(user) });
+        const cartCount = cart.products.length;
+        return res.status(200).json({
+          status: "success",
+          message: "Product added to Cart",
+          cart: cartCount,
+        });
       }
 
       // res.redirect("/cart");
@@ -362,6 +648,15 @@ module.exports = {
         .find({ userId: mongodb.ObjectId(userId) })
         .sort({ Date: -1 })
         .toArray();
+   
+
+      let EmptyCart;
+      if (OrderDetails.length === 0) {
+        EmptyCart = true;
+      } else {
+        EmptyCart = false;
+      }
+
       OrderDetails.map((Data) => {
         const ConvertString = Data.Date.toString();
         Data.Date = ConvertString.split(" ").splice(1, 3).toString();
@@ -373,16 +668,61 @@ module.exports = {
         .collection(collection.USER_COLLECTION)
         .findOne({ _id: mongodb.ObjectId(userId) });
 
+      res.render("user/Profile", {
+        user: true,
+        OrderDetails,
+        userData,
+        EmptyCart,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //----------------GET ADDRESSES-----------------//
+
+  GetAddresses: async (req, res) => {
+    try {
+      const userId = req.user;
       const addressDetails = await db
         .getdb()
         .collection(collection.USER_COLLECTION)
         .findOne({ _id: mongodb.ObjectId(userId) });
+      let found;
+      if (addressDetails.address) {
+        if (addressDetails.address.length > 0) {
+          found = true;
+        } else {
+          found = false;
+        }
+      } else {
+        found = false;
+      }
 
-      res.render("user/Profile", {
+      res.render("user/address", {
         user: true,
-        OrderDetails,
         addressDetails,
+        title: "Addresses",
+        found,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //------------------Get User Details-------------------//
+
+  GetDetails: async (req, res) => {
+    try {
+      const userId = req.user;
+      const userData = await db
+        .getdb()
+        .collection(collection.USER_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(userId) });
+      res.render("user/accountDetails", {
+        user: true,
         userData,
+        title: "Account Details",
       });
     } catch (error) {
       console.log(error);
@@ -416,11 +756,29 @@ module.exports = {
         .aggregate(wishlist_products)
         .toArray();
 
-      res.render("user/UserWishlist", {
-        title: "Wishlist",
-        user: true,
-        WishlistProducts,
-      });
+      let WishlistExists = true;
+      if (!WishlistProducts) {
+        WishlistExists = false;
+      } else {
+        if (WishlistProducts.Product_details.length == 0) {
+          WishlistExists = false;
+        } else {
+
+          WishlistExists = true;
+        }
+      }
+      if (WishlistExists) {
+        res.render("user/UserWishlist", {
+          title: "Wishlist",
+          user: true,
+          WishlistProducts,
+        });
+      } else {
+        res.render("user/emptyWishlist", {
+          user: true,
+          title: "Empty wishlist",
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -440,7 +798,6 @@ module.exports = {
           products: { $elemMatch: { productId: mongodb.ObjectId(ProductId) } },
         });
 
-      console.log(wishlist_check);
       if (!wishlist_check) {
         const Add_to_wishlist = await db
           .getdb()
@@ -455,14 +812,39 @@ module.exports = {
             { upsert: true }
           );
 
+        const wishlists = await db
+          .getdb()
+          .collection(collection.WISHLIST_COLLECTION)
+          .findOne({ userId: mongodb.ObjectId(userId) });
+        const wishlistcount = wishlists.products.length;
         return res.status(200).json({
           status: "success",
           message: "Added to Wishlist",
+          wishlist: wishlistcount,
         });
       } else {
+        const remove = await db
+          .getdb()
+          .collection(collection.WISHLIST_COLLECTION)
+          .updateOne(
+            { userId: mongodb.ObjectId(userId) },
+            {
+              $pull: {
+                products: { productId: mongodb.ObjectId(ProductId) },
+              },
+            }
+          );
+
+        const wishlists = await db
+          .getdb()
+          .collection(collection.WISHLIST_COLLECTION)
+          .findOne({ userId: mongodb.ObjectId(userId) });
+        const wishlistcount = wishlists.products.length;
+
         return res.status(200).json({
           status: "found",
-          message: "Already in wishlist",
+          message: "Removed from wishlist",
+          wishlist: wishlistcount,
         });
       }
     } catch (error) {
@@ -494,6 +876,136 @@ module.exports = {
         message: "Deleted from wishlist",
       });
     } catch (error) {}
+  },
+
+  //---------------RETURN ODER POST----------------//
+
+  ReturnOrder: async (req, res) => {
+    try {
+      const userId = req.user;
+      const orderId = req.body.orderId;
+
+      const ProductInventory = [
+        {
+          $match: {
+            _id: mongodb.ObjectId(orderId),
+          },
+        },
+        {
+          $unwind: {
+            path: "$Products",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            productId: "$Products.product_details._id",
+            quantity: "$Products.quantity",
+          },
+        },
+      ];
+
+      const StockChange = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .aggregate(ProductInventory)
+        .toArray();
+
+      StockChange.map(async (data) => {
+        let Id = data.productId;
+        let quantity = data.quantity;
+
+        const change = await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .updateOne(
+            { _id: mongodb.ObjectId(Id) },
+            { $inc: { stock: -quantity } }
+          );
+      });
+
+      const orderDetails = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(orderId) });
+
+      await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .updateOne(
+          { _id: mongodb.ObjectId(orderId) },
+          { $set: { return: true, OrderStatus: "Returned" } }
+        );
+
+      const WalletData = await db
+        .getdb()
+        .collection(collection.WALLET_COLLECTION)
+        .findOne({ userId: mongodb.ObjectId(userId) });
+
+      if (WalletData) {
+        const updateWallet = await db
+          .getdb()
+          .collection(collection.WALLET_COLLECTION)
+          .updateOne(
+            { userId: mongodb.ObjectId(userId) },
+            {
+              $inc: { TotalAmount: orderDetails.TotalPrice },
+
+              $push: {
+                transactions: {
+                  amount: orderDetails.TotalPrice,
+                  date: commonController.date(),
+                  type: "Refund",
+                  transaction: "Credit",
+                  Id: new mongodb.ObjectId(),
+                },
+              },
+            }
+          );
+      } else {
+        const wallet = await db
+          .getdb()
+          .collection(collection.WALLET_COLLECTION)
+          .insertOne({
+            userId: mongodb.ObjectId(userId),
+            TotalAmount: orderDetails.TotalPrice,
+            transactions: [
+              {
+                amount: orderDetails.TotalPrice,
+                date: commonController.date(),
+                type: "Refund",
+                transaction: "Credit",
+                Id: new mongodb.ObjectId(),
+              },
+            ],
+          });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        message: "Return Successful!",
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(400).json({
+        status: "failed",
+        message: err,
+      });
+    }
+  },
+
+  //---------------Render Wallet page---------------------//
+
+  GetWallet: async (req, res) => {
+    try {
+      const WalletData = await db
+        .getdb()
+        .collection(collection.WALLET_COLLECTION)
+        .findOne();
+      res.render("user/wallet", { user: true, title: "Wallet", WalletData });
+    } catch (error) {
+      console.log(error);
+    }
   },
 
   //---------------Render CHECKOUT page---------------------//
@@ -578,7 +1090,7 @@ module.exports = {
     try {
       const productId = req.body.productId;
       const userId = req.user;
-      console.log({ productId, userId });
+      // console.log({ productId, userId });
       const deletedProduct = await db
         .getdb()
         .collection(collection.CART_DATA)
@@ -639,7 +1151,7 @@ module.exports = {
   add_address: async (req, res) => {
     try {
       const userId = req.user;
-      console.log(userId);
+      // console.log(userId);
       const { name, number, district, pincode, address, state, landmark } =
         req.body;
       const data = await db
@@ -683,12 +1195,14 @@ module.exports = {
       const addressId = req.body.addressId;
       const paymentMethod = req.body.paymentMethod;
       const coupon = req.body.coupon;
-      const coupondetails = await db
-        .getdb()
-        .collection(collection.COUPON_COLLECTION)
-        .findOne({ couponCode: coupon });
-      const couponId = coupondetails._id;
 
+      // if (coupon !== "") {
+      //   const coupondetails = await db
+      //     .getdb()
+      //     .collection(collection.COUPON_COLLECTION)
+      //     .findOne({ couponCode: coupon });
+      //   couponId = coupondetails._id;
+      // }
       // console.log(req.body);
       const agg = [
         {
@@ -780,12 +1294,51 @@ module.exports = {
         .toArray();
 
       let TotalAmount = CartDetails[0].total;
-      console.log(TotalAmount);
+      // console.log(TotalAmount);
       let discount;
       let discountPrice;
+      let couponId;
 
       if (coupon !== "") {
         //----------Adding users to coupon collections----------//
+
+        const coupondetails = await db
+          .getdb()
+          .collection(collection.COUPON_COLLECTION)
+          .findOne({ couponCode: coupon });
+
+        if (coupondetails) {
+          const user = await db
+            .getdb()
+            .collection(collection.COUPON_COLLECTION)
+            .findOne({
+              _id: mongodb.ObjectId(coupondetails._id),
+              users: { $elemMatch: { userId: mongodb.ObjectId(userId) } },
+            });
+          // console.log(user);
+          if (user) {
+            TotalAmount = CartDetails[0].total;
+          } else {
+            if (new Date() >= coupondetails.date) {
+              TotalAmount = CartDetails[0].total;
+            } else {
+              couponId = coupondetails._id;
+              discount = coupondetails.discount;
+              discountPrice = (TotalAmount * discount) / 100;
+              TotalAmount = TotalAmount - discountPrice;
+              TotalAmount = Math.floor(TotalAmount);
+            }
+          }
+        } else {
+          TotalAmount = CartDetails[0].total;
+        }
+
+        // couponId = coupondetails._id;
+        // discount = coupondetails.discount;
+        // discountPrice = (TotalAmount * discount) / 100;
+        // TotalAmount = TotalAmount - discountPrice;
+        // TotalAmount = Math.floor(TotalAmount);
+
         await db
           .getdb()
           .collection(collection.COUPON_COLLECTION)
@@ -794,15 +1347,14 @@ module.exports = {
             { $push: { users: { userId: mongodb.ObjectId(userId) } } }
           );
 
-        const couponCode = await db
-          .getdb()
-          .collection(collection.COUPON_COLLECTION)
-          .findOne({ couponCode: coupon });
-        discount = couponCode.discount;
-        console.log(discount);
-        discountPrice = (TotalAmount * discount) / 100;
-        TotalAmount = TotalAmount - discountPrice;
-        TotalAmount = Math.floor(TotalAmount);
+        // const couponCode = await db
+        //   .getdb()
+        //   .collection(collection.COUPON_COLLECTION)
+        //   .findOne({ couponCode: coupon });
+        // discount = couponCode.discount;
+        // discountPrice = (TotalAmount * discount) / 100;
+        // TotalAmount = TotalAmount - discountPrice;
+        // TotalAmount = Math.floor(TotalAmount);
       } else {
         TotalAmount = CartDetails[0].total;
       }
@@ -821,10 +1373,10 @@ module.exports = {
 
       // Delete Cart Products after checkout
 
-      // await db
-      //   .getdb()
-      //   .collection(collection.CART_DATA)
-      //   .deleteOne({ userId: mongodb.ObjectId(userId) });
+      await db
+        .getdb()
+        .collection(collection.CART_DATA)
+        .deleteOne({ userId: mongodb.ObjectId(userId) });
 
       if (paymentMethod == "RAZORPAY") {
         OrderDetails.OrderStatus = "Pending";
@@ -860,6 +1412,45 @@ module.exports = {
           .getdb()
           .collection(collection.ORDER_COLLECTION)
           .insertOne(OrderDetails);
+
+        const ProductInventory = [
+          {
+            $match: {
+              _id: mongodb.ObjectId(Order_details.insertedId),
+            },
+          },
+          {
+            $unwind: {
+              path: "$Products",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              productId: "$Products.product_details._id",
+              quantity: "$Products.quantity",
+            },
+          },
+        ];
+
+        const StockChange = await db
+          .getdb()
+          .collection(collection.ORDER_COLLECTION)
+          .aggregate(ProductInventory)
+          .toArray();
+
+        StockChange.map(async (data) => {
+          let Id = data.productId;
+          let quantity = data.quantity;
+
+          const change = await db
+            .getdb()
+            .collection(collection.PRODUCT_COLLECTION)
+            .updateOne(
+              { _id: mongodb.ObjectId(Id) },
+              { $inc: { stock: -quantity } }
+            );
+        });
 
         var create_payment_json = {
           intent: "sale",
@@ -900,7 +1491,7 @@ module.exports = {
           } else {
             for (let i = 0; i < payment.links.length; i++) {
               if (payment.links[i].rel === "approval_url") {
-                console.log(payment.links[i].rel === "approval_url");
+                // console.log(payment.links[i].rel === "approval_url");
 
                 res.json({
                   status: "paypal",
@@ -910,11 +1501,118 @@ module.exports = {
             }
           }
         });
+      } else if (paymentMethod == "WALLET") {
+        const walletData = await db
+          .getdb()
+          .collection(collection.WALLET_COLLECTION)
+          .findOne({ userId: mongodb.ObjectId(userId) });
+        if (TotalAmount > walletData.TotalAmount) {
+          return res.status(400).json({
+            status: "no-fund",
+            message: "The Wallet doesn't have enough money!",
+          });
+        } else {
+          const WalletMoneyChange = await db
+            .getdb()
+            .collection(collection.WALLET_COLLECTION)
+            .updateOne(
+              { userId: mongodb.ObjectId(userId) },
+              { $inc: { TotalAmount: -TotalAmount } }
+            );
+
+          const Order_details = await db
+            .getdb()
+            .collection(collection.ORDER_COLLECTION)
+            .insertOne(OrderDetails);
+
+          const ProductInventory = [
+            {
+              $match: {
+                _id: mongodb.ObjectId(Order_details.insertedId),
+              },
+            },
+            {
+              $unwind: {
+                path: "$Products",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $project: {
+                productId: "$Products.product_details._id",
+                quantity: "$Products.quantity",
+              },
+            },
+          ];
+
+          const StockChange = await db
+            .getdb()
+            .collection(collection.ORDER_COLLECTION)
+            .aggregate(ProductInventory)
+            .toArray();
+
+          StockChange.map(async (data) => {
+            let Id = data.productId;
+            let quantity = data.quantity;
+
+            const change = await db
+              .getdb()
+              .collection(collection.PRODUCT_COLLECTION)
+              .updateOne(
+                { _id: mongodb.ObjectId(Id) },
+                { $inc: { stock: -quantity } }
+              );
+          });
+
+          return res.status(200).json({
+            status: "success",
+            message: "Order Placed with Wallet Money",
+          });
+        }
       } else if (paymentMethod == "COD") {
         const Order_details = await db
           .getdb()
           .collection(collection.ORDER_COLLECTION)
           .insertOne(OrderDetails);
+
+        const ProductInventory = [
+          {
+            $match: {
+              _id: mongodb.ObjectId(Order_details.insertedId),
+            },
+          },
+          {
+            $unwind: {
+              path: "$Products",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              productId: "$Products.product_details._id",
+              quantity: "$Products.quantity",
+            },
+          },
+        ];
+
+        const StockChange = await db
+          .getdb()
+          .collection(collection.ORDER_COLLECTION)
+          .aggregate(ProductInventory)
+          .toArray();
+
+        StockChange.map(async (data) => {
+          let Id = data.productId;
+          let quantity = data.quantity;
+
+          const change = await db
+            .getdb()
+            .collection(collection.PRODUCT_COLLECTION)
+            .updateOne(
+              { _id: mongodb.ObjectId(Id) },
+              { $inc: { stock: -quantity } }
+            );
+        });
         return res.status(200).json({
           status: "success",
           message: "Order Placed!",
@@ -953,8 +1651,102 @@ module.exports = {
 
   CancelOrder: async (req, res) => {
     try {
-      console.log("Cancel Order Reached");
       const orderId = req.body.OrderId;
+      const userId = req.user;
+
+      const ProductInventory = [
+        {
+          $match: {
+            _id: mongodb.ObjectId(orderId),
+          },
+        },
+        {
+          $unwind: {
+            path: "$Products",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $project: {
+            productId: "$Products.product_details._id",
+            quantity: "$Products.quantity",
+          },
+        },
+      ];
+
+      const StockChange = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .aggregate(ProductInventory)
+        .toArray();
+
+      StockChange.map(async (data) => {
+        let Id = data.productId;
+        let quantity = data.quantity;
+
+        const change = await db
+          .getdb()
+          .collection(collection.PRODUCT_COLLECTION)
+          .updateOne(
+            { _id: mongodb.ObjectId(Id) },
+            { $inc: { stock: -quantity } }
+          );
+      });
+
+      const OrderDetails = await db
+        .getdb()
+        .collection(collection.ORDER_COLLECTION)
+        .findOne({ _id: mongodb.ObjectId(orderId) });
+
+      // console.log(OrderDetails.TotalPrice);
+
+      const checkWallet = await db
+        .getdb()
+        .collection(collection.WALLET_COLLECTION)
+        .findOne({ userId: mongodb.ObjectId(userId) });
+      // console.log(checkWallet);
+
+      if (OrderDetails.Payment !== "COD") {
+        if (checkWallet) {
+          const updateWallet = await db
+            .getdb()
+            .collection(collection.WALLET_COLLECTION)
+            .updateOne(
+              { userId: mongodb.ObjectId(userId) },
+              {
+                $inc: { TotalAmount: OrderDetails.TotalPrice },
+
+                $push: {
+                  transactions: {
+                    amount: OrderDetails.TotalPrice,
+                    date: commonController.date(),
+                    type: "Refund",
+                    transaction: "Credit",
+                    Id: new mongodb.ObjectId(),
+                  },
+                },
+              }
+            );
+        } else {
+          const wallet = await db
+            .getdb()
+            .collection(collection.WALLET_COLLECTION)
+            .insertOne({
+              userId: mongodb.ObjectId(userId),
+              TotalAmount: OrderDetails.TotalPrice,
+              transactions: [
+                {
+                  amount: OrderDetails.TotalPrice,
+                  date: commonController.date(),
+                  type: "Refund",
+                  transaction: "Credit",
+                  Id: new mongodb.ObjectId(),
+                },
+              ],
+            });
+        }
+      }
+
       const Cancelled = await db
         .getdb()
         .collection(collection.ORDER_COLLECTION)
@@ -975,7 +1767,7 @@ module.exports = {
 
   cancelProductFromOrder: async (req, res) => {
     try {
-      console.log(req.body);
+      // console.log(req.body);
       const orderId = req.body.orderId;
       const ProId = req.body.ProId;
       const Cancel_Product = await db
@@ -995,7 +1787,7 @@ module.exports = {
           },
           { upsert: true }
         );
-      console.log(Cancel_Product);
+      // console.log(Cancel_Product);
     } catch (error) {
       console.log(error);
     }
@@ -1003,8 +1795,8 @@ module.exports = {
 
   EditUser: async (req, res) => {
     try {
-      console.log("Entered The function");
-      console.log(req.body);
+      // console.log("Entered The function");
+      // console.log(req.body);
       const { name, email, number } = req.body;
       const userId = req.params.id;
       const Edit_User = await db
@@ -1028,20 +1820,20 @@ module.exports = {
 
   PostPasswordChange: async (req, res) => {
     try {
-      console.log("Hi im here");
+      // console.log("Hi im here");
       const newpass = req.body.newpass;
       const current = req.body.current;
-      console.log(current);
+      // console.log(current);
       const userId = req.user;
       const user = await db
         .getdb()
         .collection(collection.USER_COLLECTION)
         .findOne({ _id: mongodb.ObjectId(userId) });
       const ComparePassword = await bcrypt.compare(current, user.password);
-      console.log(ComparePassword);
+      // console.log(ComparePassword);
       if (ComparePassword) {
         const hashedpassword = await bcrypt.hash(newpass, 10);
-        console.log("first");
+        // console.log("first");
         const change = await db
           .getdb()
           .collection(collection.USER_COLLECTION)
@@ -1049,7 +1841,7 @@ module.exports = {
             { _id: mongodb.ObjectId(userId) },
             { $set: { password: hashedpassword } }
           );
-        console.log(change);
+        // console.log(change);
 
         return res.status(200).json({
           status: "success",
@@ -1088,13 +1880,14 @@ module.exports = {
     try {
       const userId = req.user;
       const addressId = req.body.addressId;
+      console.log(addressId);
+      // console.log(first);
       const data = await db
         .getdb()
         .collection(collection.USER_COLLECTION)
         .updateOne(
           {
             _id: mongodb.ObjectId(userId),
-            "address.id": mongodb.ObjectId(addressId),
           },
           {
             $pull: {
@@ -1102,7 +1895,7 @@ module.exports = {
             },
           }
         );
-      console.log(data);
+      // console.log(data);
       return res.status(200).json({
         status: "success",
         message: "address deleted",
@@ -1116,15 +1909,59 @@ module.exports = {
 
   VerifyPayment: async (req, res) => {
     try {
-      const Id = req.body.order.receipt;
+      const Id = mongodb.ObjectId(req.body.order.receipt);
+
       const paymentId = req.body.payment.razorpay_payment_id;
+
       const orderId = req.body.payment.razorpay_order_id;
+
       const signature = req.body.payment.razorpay_signature;
+
       const crypto = require("crypto");
       let hmac = crypto.createHmac("sha256", process.env.RAZORPAY_SECRET_KEY);
       hmac.update(orderId + "|" + paymentId);
       hmac = hmac.digest("hex");
+
       if (hmac == signature) {
+        const ProductInventory = [
+          {
+            $match: {
+              _id: mongodb.ObjectId(Id),
+            },
+          },
+          {
+            $unwind: {
+              path: "$Products",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              productId: "$Products.product_details._id",
+              quantity: "$Products.quantity",
+            },
+          },
+        ];
+
+        const StockChange = await db
+          .getdb()
+          .collection(collection.ORDER_COLLECTION)
+          .aggregate(ProductInventory)
+          .toArray();
+
+        StockChange.map(async (data) => {
+          let Id = data.productId;
+          let quantity = data.quantity;
+
+          const change = await db
+            .getdb()
+            .collection(collection.PRODUCT_COLLECTION)
+            .updateOne(
+              { _id: mongodb.ObjectId(Id) },
+              { $inc: { stock: -quantity } }
+            );
+        });
+
         await db
           .getdb()
           .collection(collection.ORDER_COLLECTION)
@@ -1132,7 +1969,7 @@ module.exports = {
             { _id: mongodb.ObjectId(Id) },
             { $set: { OrderStatus: "Confirmed" } }
           );
-        res.status(200).json({
+        return res.status(200).json({
           status: "success",
           message: "Payment Successful",
         });
@@ -1144,7 +1981,7 @@ module.exports = {
             { _id: mongodb.ObjectId(Id) },
             { $set: { OrderStatus: "Failed" } }
           );
-        res.status(400).json({
+        return res.status(400).json({
           status: "failed",
           message: "Payment Failed",
         });

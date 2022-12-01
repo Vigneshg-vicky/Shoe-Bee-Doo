@@ -10,15 +10,18 @@ async function AddToCart(proId) {
             }
         })
         if (response.data.status == 'success') {
+            document.getElementById('cart').innerHTML = response.data.cart;
+            
+            document.getElementById('cart2').textContent = response.data.cart;
 
             Toastify({
                 text: "Added to Cart",
                 duration: 3000,
-                gravity: "bottom", // `top` or `bottom`
+                gravity: "top", // `top` or `bottom`
                 position: "center", // `left`, `center` or `right`
                 stopOnFocus: true, // Prevents dismissing of toast on hover
                 style: {
-                    background: "black",
+                    background: "red",
                 },
                 onClick: function () { } // Callback after click
             }).showToast();

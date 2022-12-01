@@ -62,13 +62,22 @@ module.exports = {
       const hashedpassword = await bcrypt.hash(password, 10);
       const user = await db
         .getdb()
-        .collection("userData")
+        .collection(collection.USER_COLLECTION)
         .findOne({ email: email });
+        const NumberCheck = await db
+        .getdb()
+        .collection(collection.USER_COLLECTION)
+        .findOne({ number: number });
       if (user) {
-        //   req.session.error = "User already exists!";
+
         return res.status(401).json({
           status: "failed",
-          message: "User aleady exists!",
+          message: "User aleady exists with the same Email!",
+        });
+      }else if(NumberCheck){
+        return res.status(401).json({
+          status: "failed",
+          message: "User exists with the same Number!",
         });
       } else {
         if (password !== confirm_password) {
@@ -86,7 +95,7 @@ module.exports = {
             number: number,
             password: hashedpassword,
           });
-          usertoken(userData._id, res);
+          usertoken(userData.insertedId, res);
           res.status(200).json({ status: "success" });
         }
       }
@@ -148,6 +157,7 @@ module.exports = {
         if (decoded) {
           // console.log({decoded});
           req.user = decoded.id;
+          console.log(req.user)
           const userData = await db
             .getdb()
             .collection(collection.USER_COLLECTION)
@@ -164,16 +174,6 @@ module.exports = {
         }
         // console.log(decoded);
       }
-
-      // 3) Check if user still exists
-      // else if (decoded) {
-      //   console.log('decoded.id')
-      //   req.user = decoded.id;
-      // } else if(!decoded){
-      //   res.redirect("/login?error=The User with this token no longer exists!");
-      // }
-
-      // 4) Check if user changed password after the token was issued
 
       next();
     } catch (error) {

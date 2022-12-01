@@ -109,6 +109,9 @@
                                 {{#eq OrderStatus 'Confirmed'}}
                                 <span class="badge badge-pill badge-success">{{OrderStatus}}</span>
                                 {{/eq}}
+                                 {{#eq OrderStatus 'Returned'}}
+                                <span class="badge badge-pill badge-success">{{OrderStatus}}</span>
+                                {{/eq}}
 
                                 {{#eq OrderStatus 'Cancelled'}}
                                 <span class="badge badge-pill badge-danger">{{OrderStatus}}</span>
@@ -129,7 +132,11 @@
                                 {{#if cancel}}
                                 <span id="cancelled" class="text-danger">{{OrderStatus}}</span>
                                 {{else if delivered}}
+                                {{#if return}}
+                                <span id="returned" class="text-success">{{OrderStatus}}</span>
+                                {{else}}
                                 <span id="delivered" class="text-success">{{OrderStatus}}</span>
+                                {{/if}}
                                 {{else}}
                                 <form action="/admin/order-cancel/{{this._id}}" method="post">
                                     <div class="form-group">

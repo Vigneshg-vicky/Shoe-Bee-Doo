@@ -7,6 +7,7 @@ const session = require('express-session');
 const db = require ('./db');
 const hbs = require('express-handlebars');
 const helpers = require('handlebars-helpers')();
+const collection = require('./controllers/config/collection')
 
 var userRouter = require('./routes/index');
 var adminRouter = require('./routes/admin');
@@ -31,6 +32,11 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }));
+
+app.use(async(req,res,next)=>{
+  res.locals.localBrands = await db.getdb().collection(collection.BRAND_COLLECTION).find().toArray();
+  next();
+})
 
 app.use((req, res, next) => {
   res.set(

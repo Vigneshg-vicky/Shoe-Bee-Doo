@@ -1,0 +1,114 @@
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">My Account</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                <li><a href="/shop">Shop</a></li>
+                                <li class="active" aria-current="page">My Account</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Account Dashboard Section:::... -->
+<div class="account-dashboard">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-3 col-lg-3">
+                <!-- Nav tabs -->
+                <div class="dashboard_tab_button" data-aos="fade-up" data-aos-delay="0">
+                    <ul role="tablist" class="nav flex-column dashboard-list">
+                        {{!-- <li><a href="#dashboard"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover ">Dashboard</a>
+                        </li> --}}
+                        <li> <a href="/profile"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover ">Orders</a></li>
+
+                        <li><a href="/address"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Addresses</a></li>
+                        <li><a href="" class="nav-link btn btn-block btn-md btn-black-default-hover active">Account
+                                details</a>
+                        </li>
+                        <li><a href="/wallet" class="nav-link btn btn-block btn-md btn-black-default-hover ">Wallet</a>
+                        </li>
+                        <li><a href="/logout" class="nav-link btn btn-block btn-md btn-black-default-hover">logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-9 col-lg-9">
+                <div class="tab-content dashboard_content" data-aos="fade-up" data-aos-delay="200">
+                    <br>
+                    <!-- Tab panes -->
+                    <div class="tab-pane fade active" id="account-details">
+                        <h3>Account details </h3>
+                        <div class="login">
+                            <div class="login_form_container">
+                                <div class="account_login_form">
+                                    {{!-- <br> --}}
+                                    <p>You can change your Account details here.</p>
+                                    {{#with userData}}
+                                    <form action="/edit-user/{{this._id}}" method="post">
+                                        {{!-- <p>Already have an account? <a href="#">Log in instead!</a></p> --}}
+                                        {{!-- <div class="input-radio">
+                                            <span class="custom-radio"><input type="radio" value="1" name="id_gender">
+                                                Mr.</span>
+                                            <span class="custom-radio"><input type="radio" value="1" name="id_gender">
+                                                Mrs.</span>
+                                        </div> --}}
+                                        <div class="default-form-box mb-20">
+                                            <label>Full Name</label>
+                                            <input type="text" name="name" value="{{this.name}}">
+                                        </div>
+                                        {{!-- <div class="default-form-box mb-20">
+                                            <label>Last Name</label>
+                                            <input type="text" name="last-name">
+                                        </div> --}}
+                                        <div class="default-form-box mb-20">
+                                            <label>Email</label>
+                                            <input type="text" name="email" value="{{this.email}}">
+                                        </div>
+                                        <div class="default-form-box mb-20">
+                                            <label>Mobile No.</label>
+                                            <input type="number" name="number" value="{{this.number}}">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="save_button mt-3">
+                                                    <button class="btn btn-md btn-black-default-hover"
+                                                        type="submit">Save</button>
+                                                </div>
+                                            </div>
+                                            <div class="col xl-3">
+                                                <div class="save_button mt-3">
+                                                    <a href="/password"
+                                                        class="btn btn-md btn-black-default-hover active">Change
+                                                        Password<button></button></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {{/with}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br> <br><br><br><!-- ...:::: End Account Dashboard Section:::... -->

@@ -1,5 +1,8 @@
-<!-- Offcanvas Overlay -->
-<div class="offcanvas-overlay"></div>
+<style>
+    .error{
+        color: red;
+    }
+</style>
 
 <!-- ...:::: Start Breadcrumb Section:::... -->
 <div class="breadcrumb-section breadcrumb-bg-color--golden">
@@ -35,7 +38,7 @@
                     <form id="submit-form" action="#">
                         <div class="default-form-box">
                             {{!-- Error --}}
-                            <span id="error" class="text-dark h2 text-danger"></span>
+                            <span id="error" class="h2 text-danger"></span>
                             <!--Error message shows here-->
                             <label>Name <span>*</span></label>
                             <input type="text"  id="name" name="name">

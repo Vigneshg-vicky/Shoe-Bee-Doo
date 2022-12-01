@@ -13,29 +13,36 @@ module.exports = {
         .getdb()
         .collection(collection.USER_COLLECTION)
         .findOne({ number: req.body.number });
-        console.log(req.body)
-        console.log(numbercheck)
+      // console.log(req.body)
+      // console.log(numbercheck)
       if (numbercheck) {
-        const result = await client.verify
-          .services(process.env.SERVICE_ID)
-          .verifications.create({
-            to: `+91${req.body.number}`,
-            channel: "sms",
+        if (numbercheck.IsBlocked) {
+          return res.status(400).json({
+            status: "Blocked",
+            message: "This account is temporarily disabled!",
           });
+        } else {
+          const result = await client.verify
+            .services(process.env.SERVICE_ID)
+            .verifications.create({
+              to: `+91${req.body.number}`,
+              channel: "sms",
+            });
 
-        return res.status(200).json({
-          status: "success",
-          message:'OTP has been sent'
-        });
+          return res.status(200).json({
+            status: "success",
+            message: "OTP has been sent",
+          });
+        }
       } else {
-        return res.status(500).json({
+        return res.status(400).json({
           status: "failed",
           message: "Entered Number is not a valid User *",
         });
       }
     } catch (err) {
       console.log(err);
-      return res.status(500).json({
+      return res.status(400).json({
         status: "failed",
         message: "Too many Requests. Please try again after sometime....",
       });
@@ -44,25 +51,26 @@ module.exports = {
   // otp verification.................................................................................
 
   submitOtp: async (req, res) => {
-    console.log(process.env.SERVICE_ID)
+    console.log(process.env.SERVICE_ID);
     try {
-        console.log(req.body)
+      console.log(req.body);
       const data = await client.verify
         .services(process.env.SERVICE_ID)
         .verificationChecks.create({
           to: `+91${req.body.number}`,
           code: req.body.otp,
         });
-        console.log(data.status)
+      console.log(data.status);
       if (data.status == "approved") {
         // req.session.login=true;
         // req.session.logintime = new Date();
         // req.session.userId = user._id;
         const user = await db
           .getdb()
-          .collection("users")
+          .collection(collection.USER_COLLECTION)
           .findOne({ number: req.body.number });
-        // token(user._id, res);
+        console.log({ user });
+        token(user._id, res);
 
         res.json({
           status: "success",
@@ -76,8 +84,8 @@ module.exports = {
         });
       }
     } catch (err) {
-        console.log(err)
-      res.status(500).json({
+      console.log(err);
+      res.status(400).json({
         status: "failed",
         message: err,
       });
@@ -87,25 +95,26 @@ module.exports = {
   //------------FORGET PASSWORD-------------//
 
   VerifyPassword: async (req, res) => {
-    console.log(process.env.SERVICE_ID)
+    console.log(process.env.SERVICE_ID);
     try {
-        console.log(req.body)
+      console.log(req.body);
       const data = await client.verify
         .services(process.env.SERVICE_ID)
         .verificationChecks.create({
           to: `+91${req.body.number}`,
           code: req.body.otp,
         });
-        console.log(data.status)
+      console.log(data.status);
       if (data.status == "approved") {
         // req.session.login=true;
         // req.session.logintime = new Date();
         // req.session.userId = user._id;
         const user = await db
           .getdb()
-          .collection("users")
+          .collection(collection.USER_COLLECTION)
           .findOne({ number: req.body.number });
-        // token(user._id, res);
+        console.log(user);
+        token(user.id, res);
 
         res.json({
           status: "success",
@@ -119,7 +128,7 @@ module.exports = {
         });
       }
     } catch (err) {
-        console.log(err)
+      console.log(err);
       res.status(500).json({
         status: "failed",
         message: err,
@@ -131,12 +140,12 @@ module.exports = {
 
   resendOtp: async (req, res) => {
     try {
-      console.log(req.body)
+      console.log(req.body);
       const numbercheck = await db
         .getdb()
         .collection(collection.USER_COLLECTION)
         .findOne({ number: req.body.number });
-        console.log(numbercheck)
+      console.log(numbercheck);
       if (numbercheck) {
         const result = await client.verify
           .services(process.env.SERVICE_ID)
@@ -147,7 +156,7 @@ module.exports = {
 
         return res.status(200).json({
           status: "successs",
-          message:'OTP has been sent Again!'
+          message: "OTP has been sent Again!",
         });
       } else {
         return res.status(500).json({
@@ -164,7 +173,6 @@ module.exports = {
   },
 };
 
-
 function token(userId, res) {
   const userToken = jwt.sign({ id: userId }, process.env.JWT_SECRET_CODE, {
     expiresIn: process.env.DAYS,
@@ -174,5 +182,5 @@ function token(userId, res) {
     httpOnly: true,
   };
 
-  res.cookie("jwt", userToken, cookieOption);
+  res.cookie("userjwt", userToken, cookieOption);
 }

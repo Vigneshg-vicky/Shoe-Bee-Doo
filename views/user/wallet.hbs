@@ -1,0 +1,96 @@
+<!-- Offcanvas Overlay -->
+<div class="offcanvas-overlay"></div>
+
+<!-- ...:::: Start Breadcrumb Section:::... -->
+<div class="breadcrumb-section breadcrumb-bg-color--golden">
+    <div class="breadcrumb-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h3 class="breadcrumb-title">My Account</h3>
+                    <div class="breadcrumb-nav breadcrumb-nav-color--black breadcrumb-nav-hover-color--golden">
+                        <nav aria-label="breadcrumb">
+                            <ul>
+                                <li><a href="/home">Home</a></li>
+                                <li><a href="/shop">Shop</a></li>
+                                <li class="active" aria-current="page">My Account</li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- ...:::: End Breadcrumb Section:::... -->
+
+<!-- ...:::: Start Account Dashboard Section:::... -->
+<div class="account-dashboard">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 col-md-3 col-lg-3">
+                <!-- Nav tabs -->
+                <div class="dashboard_tab_button" data-aos="fade-up" data-aos-delay="0">
+                    <ul role="tablist" class="nav flex-column dashboard-list">
+                        {{!-- <li><a href="#dashboard"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover ">Dashboard</a>
+                        </li> --}}
+                        <li> <a href="/profile"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover ">Orders</a></li>
+                        <li><a href="/address"
+                                class="nav-link btn btn-block btn-md btn-black-default-hover">Addresses</a></li>
+                        <li><a href="/details" class="nav-link btn btn-block btn-md btn-black-default-hover">Account
+                                details</a>
+                        </li>
+                        <li><a href="" class="nav-link btn btn-block btn-md btn-black-default-hover active">Wallet</a>
+                        </li>
+                        </li>
+                        <li><a href="/logout" class="nav-link btn btn-block btn-md btn-black-default-hover">logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-9 col-lg-9">
+                <div class="tab-content dashboard_content" data-aos="fade-up" data-aos-delay="200">
+                    {{#if WalletData.TotalAmount}}
+                    <h2>Total Amount : <span>₹{{WalletData.TotalAmount}}</span></h2>
+                    
+                    <br>
+                    <!-- Tab panes -->
+                    <div class="table_desc tab-pane fade active">
+                        <div class="table_page table-responsive">
+                            <table>
+                                <!-- Start Wishlist Table Head -->
+                                <thead>
+                                    <tr>
+                                        <th class="product_remove">Date</th>
+                                        <th class="product_thumb">Debit/Credit</th>
+                                        <th class="product_name">type</th>
+                                        <th class="product-price">Amount</th>
+                                    </tr>
+                                </thead> <!-- End Cart Table Head -->
+                                <tbody>
+                                    {{#with WalletData}}
+                                    {{#each transactions}}
+                                    <tr>
+                                        <td class="product_remove"><a>{{this.date}}</a>
+                                        </td>
+
+                                        <td class="product_thumb">{{transaction}}</td>
+                                        <td class="product_name">{{type}}</td>
+                                        <td class="product-price">₹{{amount}}</td>
+                                    </tr> <!-- End Wishlist Single Item-->
+                                    {{/each}}
+                                    {{/with}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {{else}}
+                    <h2>You dont have any Money in your wallet right now Sorry!</h2>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br> <br><br><br><!-- ...:::: End Account Dashboard Section:::... -->

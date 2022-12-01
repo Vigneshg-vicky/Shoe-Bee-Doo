@@ -7,7 +7,8 @@
                         <!-- Start Header Logo -->
                         <div class="header-logo">
                             <div class="logo">
-                                <a href="index.html"><img src="/images/logo/logo_black.png" alt=""></a>
+                                <a href="/home"><img style="width: 180px;height:30px ;" src="/images/logo/main-logo.png"
+                                        alt=""></a>
                             </div>
                         </div>
                         <!-- End Header Logo -->
@@ -17,24 +18,24 @@
                             <nav>
                                 <ul>
                                     <li class="has-dropdown">
-                                        <a class="active main-menu-link" href="/home">Home <i
-                                                class="fa fa-angle-down"></i></a>
+                                        <a class="active main-menu-link" href="/home">Home </a> {{!<i
+                                            class="fa fa-angle-down"></i>}}
                                         <!-- Sub Menu -->
-                                        <ul class="sub-menu">
+                                        {{!-- <ul class="sub-menu">
                                             <li><a href="/home">Home 1</a></li>
                                             <li><a href="index-2.html">Home 2</a></li>
                                             <li><a href="index-3.html">Home 3</a></li>
                                             <li><a href="index-4.html">Home 4</a></li>
-                                        </ul>
+                                        </ul> --}}
                                     </li>
 
                                     <li class="has-dropdown">
-                                        <a href="#">CATEGORIES<i class="fa fa-angle-down"></i></a>
+                                        <a href="#">CATEGORIES <i class="fa fa-angle-down"></i></a>
                                         <!-- Sub Menu -->
                                         <ul class="sub-menu">
-                                            <li><a href="faq.html">Mens</a></li>
-                                            <li><a href="privacy-policy.html">Womens</a></li>
-                                            <li><a href="404.html">Kids</a></li>
+                                            <li><a href="/shop?catId=Men">Mens</a></li>
+                                            <li><a href="/shop?catId=Women">Womens</a></li>
+                                            <li><a href="/shop?catId=Kids">Kids</a></li>
                                         </ul>
                                     </li>
                                     {{!-- Products Menu --}}
@@ -43,7 +44,13 @@
                                     </li>
                                     {{!-- Brands Menu --}}
                                     <li>
-                                        <a href="/brands">Brands</a>
+                                        <a href="">Brands</a>
+                                        <!-- Sub Menu -->
+                                        <ul class="sub-menu">
+                                            {{#each localBrands}}
+                                            <li><a href='/shop?brandId={{this._id}}'>{{this.BrandName}}</a></li>
+                                            {{/each}}
+                                        </ul>
                                     </li>
 
                                     {{!-- <li>
@@ -53,9 +60,29 @@
                                             <li><a href="/about">About Us</a></li>
                                             <li><a href="/contact">Contact Us</a></li>
                                     </li> --}}
-                                    <li>
-                                        <a href="/profile">Welcome </a>
+                                    {{#if User}}
+                                    <li class="has-dropdown">
+                                        <a href="#"><i class="fa fa-user"></i>Hi, {{User.name}}<i
+                                                class="fa fa-angle-down"></i></a>
+                                        <!-- Sub Menu -->
+                                        <ul class="sub-menu">
+                                            <li><a href="/profile">Orders</a></li>
+                                            <li><a href="/address">Address</a></li>
+                                            <li><a href="/wallet">Wallet</a></li>
+                                            <li><a href="/details">Account</a></li>
+                                            <li><a href="/logout">Logout</a></li>
+                                        </ul>
                                     </li>
+                                    {{else}}
+                                    <li class="has-dropdown">
+                                        <a href="">Sign In <i class="fa fa-angle-down"></i></a>
+                                        <!-- Sub Menu -->
+                                        <ul class="sub-menu">
+                                            <li><a href="/login">Log In</a></li>
+                                            <li><a href="/">Sign Up</a></li>
+                                        </ul>
+                                    </li>
+                                    {{/if}}
                                 </ul>
                             </nav>
                         </div>
@@ -66,13 +93,21 @@
                             <li>
                                 <a href="/wishlist">
                                     <i class="icon-heart"></i>
-                                    <span class="item-count">3</span>
+                                    {{#if User}}
+                                    <span id="wishlist" class="item-count"></span>
+                                    {{else}}
+                                    <span class="item-count">0</span>
+                                    {{/if}}
                                 </a>
                             </li>
                             <li>
                                 <a href="/cart">
                                     <i class="icon-bag"></i>
-                                    <span class="item-count">3</span>
+                                    {{#if User}}
+                                    <span id="cart" class="item-count"></span>
+                                    {{else}}
+                                    <span class="item-count">0</span>
+                                    {{/if}}
                                 </a>
                             </li>
                             <li>
@@ -80,11 +115,11 @@
                                     <i class="icon-magnifier"></i>
                                 </a>
                             </li>
-                            <li>
+                            {{!-- <li>
                                 <a href="#offcanvas-about" class="offacnvas offside-about offcanvas-toggle">
                                     <i class="icon-menu"></i>
                                 </a>
-                            </li>
+                            </li> --}}
                         </ul>
                         <!-- End Header Action Link -->
                     </div>
@@ -104,9 +139,9 @@
                 <div class="mobile-header-left">
                     <ul class="mobile-menu-logo">
                         <li>
-                            <a href="index.html">
+                            <a href="/home">
                                 <div class="logo">
-                                    <img src="/images/logo/logo_black.png" alt="">
+                                    <img src="/images/logo/main-logo.png" alt="">
                                 </div>
                             </a>
                         </li>
@@ -125,13 +160,13 @@
                         <li>
                             <a href="/wishlist"> {{!-- class="offcanvas-toggle" --}}
                                 <i class="icon-heart"></i>
-                                <span class="item-count">3</span>
+                                <span id="wishlist2" class="item-count"></span>
                             </a>
                         </li>
                         <li>
                             <a href="/cart"> {{!-- class="offcanvas-toggle" --}}
                                 <i class="icon-bag"></i>
-                                <span class="item-count">3</span>
+                                <span id="cart2" class="item-count"></span>
                             </a>
                         </li>
                         <li>
@@ -174,17 +209,43 @@
                         <a href="#"><span>CATEGORIES</span></a>
                         <!-- Sub Menu -->
                         <ul class="mobile-sub-menu">
-                            <li><a href="faq.html">Mens</a></li>
-                            <li><a href="privacy-policy.html">Womens</a></li>
-                            <li><a href="404.html">Kids</a></li>
+                            <li><a href="/shop?catId=Men?">Mens</a></li>
+                            <li><a href="/shop?catId=Women">Womens</a></li>
+                            <li><a href="/shop?catId=Kids">Kids</a></li>
                         </ul>
                     </li>
+                    {{!-- <li> --}}
                     <li>
-                        <a href="/shop"><span>BRANDS</span></a>
-
+                        <a href="#">Brands</a>
+                        <!-- Sub Menu -->
+                        <ul class="mobile-sub-menu">
+                            {{#each localBrands}}
+                            <li><a href='/shop?brandId={{this._id}}'>{{this.BrandName}}</a></li>
+                            {{/each}}
+                        </ul>
                     </li>
-                    <li><a href="about-us.html">About Us</a></li>
-                    <li><a href="contact-us.html">Contact Us</a></li>
+                    {{#if User}}
+                    <li>
+                        <a href="#"><i class="fa fa-user"></i>Hi, {{User.name}}</a>
+                        <!-- Sub Menu -->
+                        <ul class="mobile-sub-menu">
+                            <li><a href="/profile">Orders</a></li>
+                            <li><a href="/address">Address</a></li>
+                            <li><a href="/wallet">Wallet</a></li>
+                            <li><a href="/details">Account</a></li>
+                            <li><a href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                    {{else}}
+                    <li>
+                        <a href="">Sign In</a>
+                        <!-- Sub Menu -->
+                        <ul class="mobile-sub-menu">
+                            <li><a href="/login">Log In</a></li>
+                            <li><a href="/">Sign Up</a></li>
+                        </ul>
+                    </li>
+                    {{/if}}
                 </ul>
             </div> <!-- End Mobile Menu Nav -->
         </div> <!-- End Mobile Menu -->
@@ -192,7 +253,7 @@
         <!-- Start Mobile contact Info -->
         <div class="mobile-contact-info">
             <div class="logo">
-                <a href="/home"><img src="/images/logo/logo_white.png" alt=""></a>
+                <a href="/home"><img src="/images/logo/main-logo.png" alt=""></a>
             </div>
 
             <address class="address">
@@ -229,10 +290,10 @@
     <!-- Start Mobile contact Info -->
     <div class="mobile-contact-info">
         <div class="logo">
-            <a href="/home"><img src="/images/logo/logo_white.png" alt=""></a>
+            <a href="/home"><img src="/images/logo/main-logo.png" alt=""></a>
         </div>
 
-        <address class="address">
+        {{!-- <address class="address">
             <span>Address: Your address goes here.</span>
             <span>Call Us: 0123456789, 0123456789</span>
             <span>Email: demo@example.com</span>
@@ -243,13 +304,15 @@
             <li><a href="#"><i class="fa fa-twitter"></i></a></li>
             <li><a href="#"><i class="fa fa-instagram"></i></a></li>
             <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
-        </ul>
-
+        </ul> --}}
+        {{#if User}}
         <ul class="user-link">
             <li><a href="/wishlist">Wishlist</a></li>
             <li><a href="/cart">Cart</a></li>
             <li><a href="/checkout">Checkout</a></li>
         </ul>
+        {{else}}
+        {{/if}}
     </div>
     <!-- End Mobile contact Info -->
 </div> <!-- ...:::: End Offcanvas Mobile Menu Section:::... -->
@@ -257,8 +320,8 @@
 <!-- Start Offcanvas Search Bar Section -->
 <div id="search" class="search-modal">
     <button type="button" class="close">×</button>
-    <form>
-        <input type="search" placeholder="type keyword(s) here" />
+    <form action="/search" , method="get">
+        <input id="search-product" type="search" name="search" placeholder="type keyword(s) here" />
         <button type="submit" class="btn btn-lg btn-golden">Search</button>
     </form>
 </div>
@@ -266,3 +329,23 @@
 
 <!-- Offcanvas Overlay -->
 <div class="offcanvas-overlay"></div>
+
+<script>
+    (async function Count() {
+        const response = await axios({
+            method: 'get',
+            url: '/count',
+        })
+        if (response.data.status == 'success') {
+            const cart = response.data.cart;
+            const wishlist = response.data.wishlist;
+            document.getElementById('cart').innerHTML = cart;
+            document.getElementById('cart2').innerHTML = cart;
+            document.getElementById('wishlist').innerHTML = wishlist;
+            document.getElementById('wishlist2').innerHTML = wishlist;
+        }
+
+    })()
+
+
+</script>
